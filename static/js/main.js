@@ -502,36 +502,18 @@ function initCashServiceAutocomplete() {
 
 // Order management functions
 async function viewOrder(orderId) {
-    try {
-        const result = await apiRequest(`/api/orders/${orderId}`);
-        if (result.success) {
-            // Показать модальное окно с деталями заказа
-            showOrderDetailsModal(result.data);
-        }
-    } catch (error) {
-        showAlert('Ошибка при загрузке заказа: ' + error.message, 'danger');
-    }
+    // Пока API не готов, показываем заглушку
+    alert(`Просмотр заказа #${orderId} - функция будет добавлена в следующей версии`);
 }
 
 async function editOrder(orderId) {
-    try {
-        const result = await apiRequest(`/api/orders/${orderId}`);
-        if (result.success) {
-            // Открыть форму редактирования заказа
-            openEditOrderModal(result.data);
-        }
-    } catch (error) {
-        showAlert('Ошибка при загрузке заказа: ' + error.message, 'danger');
-    }
+    // Пока API не готов, показываем заглушку
+    alert(`Редактирование заказа #${orderId} - функция будет добавлена в следующей версии`);
 }
 
 async function changeStatus(orderId) {
-    try {
-        // Пока API не готов, показываем заглушку
-        showAlert('Функция изменения статуса будет добавлена в следующей версии', 'info');
-    } catch (error) {
-        showAlert('Ошибка при изменении статуса: ' + error.message, 'danger');
-    }
+    // Пока API не готов, показываем заглушку
+    alert('Функция изменения статуса будет добавлена в следующей версии');
 }
 
 async function changeOrderStatus(orderId, newStatus) {
@@ -550,21 +532,13 @@ async function changeOrderStatus(orderId, newStatus) {
 }
 
 async function showAcceptanceAct(orderId) {
-    try {
-        // Пока API не готов, показываем заглушку
-        showAlert('Функция акта приема будет добавлена в следующей версии', 'info');
-    } catch (error) {
-        showAlert('Ошибка при загрузке акта приема: ' + error.message, 'danger');
-    }
+    // Пока API не готов, показываем заглушку
+    alert('Функция акта приема будет добавлена в следующей версии');
 }
 
 async function takeToWork(orderId) {
-    try {
-        // Пока API не готов, показываем заглушку
-        showAlert('Функция "Взять в работу" будет добавлена в следующей версии', 'info');
-    } catch (error) {
-        showAlert('Ошибка при взятии заказа в работу: ' + error.message, 'danger');
-    }
+    // Пока API не готов, показываем заглушку
+    alert('Функция "Взять в работу" будет добавлена в следующей версии');
 }
 
 // Modal functions
