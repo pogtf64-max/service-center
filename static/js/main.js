@@ -578,6 +578,14 @@ function showAcceptanceAct(orderId) {
     const previewDocumentType = document.getElementById('previewDocumentType');
     const previewDocumentTypeValue = document.getElementById('previewDocumentTypeValue');
     const documentPreviewContent = document.getElementById('documentPreviewContent');
+    const modal = document.getElementById('documentPreviewModal');
+    
+    console.log('Elements found:', {
+        previewDocumentType: !!previewDocumentType,
+        previewDocumentTypeValue: !!previewDocumentTypeValue,
+        documentPreviewContent: !!documentPreviewContent,
+        modal: !!modal
+    });
     
     if (previewDocumentType) {
         previewDocumentType.textContent = 'Акт приема';
