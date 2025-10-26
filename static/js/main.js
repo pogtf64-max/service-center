@@ -607,7 +607,6 @@ function showAcceptanceAct(orderId) {
     }
     
     // Показываем модальное окно
-    const modal = document.getElementById('documentPreviewModal');
     if (modal) {
         new bootstrap.Modal(modal).show();
     }
