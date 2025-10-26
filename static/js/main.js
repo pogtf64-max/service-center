@@ -527,11 +527,8 @@ async function editOrder(orderId) {
 
 async function changeStatus(orderId) {
     try {
-        const result = await apiRequest(`/api/orders/${orderId}/status`);
-        if (result.success) {
-            showAlert('Статус заказа изменен!', 'success');
-            setTimeout(() => location.reload(), 1000);
-        }
+        // Пока API не готов, показываем заглушку
+        showAlert('Функция изменения статуса будет добавлена в следующей версии', 'info');
     } catch (error) {
         showAlert('Ошибка при изменении статуса: ' + error.message, 'danger');
     }
@@ -554,13 +551,19 @@ async function changeOrderStatus(orderId, newStatus) {
 
 async function showAcceptanceAct(orderId) {
     try {
-        const result = await apiRequest(`/api/orders/${orderId}/acceptance-act`);
-        if (result.success) {
-            // Показать акт приема
-            showAcceptanceActModal(result.data);
-        }
+        // Пока API не готов, показываем заглушку
+        showAlert('Функция акта приема будет добавлена в следующей версии', 'info');
     } catch (error) {
         showAlert('Ошибка при загрузке акта приема: ' + error.message, 'danger');
+    }
+}
+
+async function takeToWork(orderId) {
+    try {
+        // Пока API не готов, показываем заглушку
+        showAlert('Функция "Взять в работу" будет добавлена в следующей версии', 'info');
+    } catch (error) {
+        showAlert('Ошибка при взятии заказа в работу: ' + error.message, 'danger');
     }
 }
 
@@ -625,3 +628,4 @@ window.editOrder = editOrder;
 window.changeStatus = changeStatus;
 window.changeOrderStatus = changeOrderStatus;
 window.showAcceptanceAct = showAcceptanceAct;
+window.takeToWork = takeToWork;
