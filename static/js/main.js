@@ -501,44 +501,106 @@ function initCashServiceAutocomplete() {
 }
 
 // Order management functions
-async function viewOrder(orderId) {
-    // Пока API не готов, показываем заглушку
-    alert(`Просмотр заказа #${orderId} - функция будет добавлена в следующей версии`);
-}
-
-async function editOrder(orderId) {
-    // Пока API не готов, показываем заглушку
-    alert(`Редактирование заказа #${orderId} - функция будет добавлена в следующей версии`);
-}
-
-async function changeStatus(orderId) {
-    // Пока API не готов, показываем заглушку
-    alert('Функция изменения статуса будет добавлена в следующей версии');
-}
-
-async function changeOrderStatus(orderId, newStatus) {
-    try {
-        const result = await apiRequest(`/api/orders/${orderId}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status: newStatus })
+function viewOrder(orderId) {
+    console.log('viewOrder called with ID:', orderId);
+    // Загружаем данные заказа
+    fetch(`/api/orders/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showOrderDetailsModal(data.data);
+            } else {
+                showAlert('Ошибка при загрузке заказа: ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading order:', error);
+            showAlert('Ошибка при загрузке заказа: ' + error.message, 'danger');
         });
-        if (result.success) {
+}
+
+function editOrder(orderId) {
+    console.log('editOrder called with ID:', orderId);
+    // Загружаем данные заказа для редактирования
+    fetch(`/api/orders/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                openEditOrderModal(data.data);
+            } else {
+                showAlert('Ошибка при загрузке заказа: ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading order for edit:', error);
+            showAlert('Ошибка при загрузке заказа: ' + error.message, 'danger');
+        });
+}
+
+function changeStatus(orderId) {
+    console.log('changeStatus called with ID:', orderId);
+    // Показываем модальное окно изменения статуса
+    document.getElementById('changeStatusOrderId').value = orderId;
+    const modal = new bootstrap.Modal(document.getElementById('changeStatusModal'));
+    modal.show();
+}
+
+function changeOrderStatus(orderId, newStatus) {
+    console.log('changeOrderStatus called with ID:', orderId, 'newStatus:', newStatus);
+    // Обновляем статус заказа
+    fetch(`/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
             showAlert('Статус заказа изменен!', 'success');
             setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert('Ошибка при изменении статуса: ' + data.message, 'danger');
         }
-    } catch (error) {
+    })
+    .catch(error => {
+        console.error('Error changing order status:', error);
         showAlert('Ошибка при изменении статуса: ' + error.message, 'danger');
-    }
+    });
 }
 
-async function showAcceptanceAct(orderId) {
-    // Пока API не готов, показываем заглушку
-    alert('Функция акта приема будет добавлена в следующей версии');
+function showAcceptanceAct(orderId) {
+    console.log('showAcceptanceAct called with ID:', orderId);
+    currentPrintOrderId = orderId;
+    
+    // Показываем модальное окно предварительного просмотра
+    document.getElementById('previewDocumentType').textContent = 'Акт приема';
+    document.getElementById('previewDocumentTypeValue').value = 'acceptance_act';
+    
+    // Загружаем данные заказа
+    fetch(`/api/orders/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const previewContent = generateAcceptanceAct(data.data);
+                document.getElementById('previewContent').innerHTML = previewContent;
+                const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+                modal.show();
+            } else {
+                showAlert('Ошибка при загрузке данных заказа: ' + data.message, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading order for acceptance act:', error);
+            showAlert('Ошибка при загрузке данных заказа: ' + error.message, 'danger');
+        });
 }
 
-async function takeToWork(orderId) {
-    // Пока API не готов, показываем заглушку
-    alert('Функция "Взять в работу" будет добавлена в следующей версии');
+function takeToWork(orderId) {
+    console.log('takeToWork called with ID:', orderId);
+    // Обновляем статус заказа на "В работе"
+    changeOrderStatus(orderId, 'in_progress');
 }
 
 // Modal functions
@@ -587,6 +649,83 @@ function showAcceptanceActModal(actData) {
     // Показать акт приема
     showAlert('Функция акта приема будет добавлена в следующей версии', 'info');
 }
+
+// Генерация АКТА ПРИЕМА
+function generateAcceptanceAct(data) {
+    const currentDate = new Date().toLocaleDateString('ru-RU');
+    const currentTime = new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+    
+    return `
+        <html>
+        <head>
+            <title>Акт приема #${data.id}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+                .info { margin-bottom: 20px; }
+                .info-row { margin-bottom: 10px; }
+                .label { font-weight: bold; display: inline-block; width: 150px; }
+                .signature { margin-top: 50px; }
+                .signature-row { margin-bottom: 20px; }
+                .signature-line { border-bottom: 1px solid black; width: 200px; display: inline-block; margin-left: 10px; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="title">АКТ ПРИЕМА ОБОРУДОВАНИЯ В РЕМОНТ</div>
+                <div>№ ${data.id} от ${currentDate}</div>
+            </div>
+            
+            <div class="info">
+                <div class="info-row">
+                    <span class="label">Клиент:</span> ${data.client_name || 'Не указан'}
+                </div>
+                <div class="info-row">
+                    <span class="label">Телефон:</span> ${data.client_phone || 'Не указан'}
+                </div>
+                <div class="info-row">
+                    <span class="label">Адрес:</span> ${data.client_address || 'Не указан'}
+                </div>
+                <div class="info-row">
+                    <span class="label">Устройство:</span> ${data.device_type || 'Не указано'}
+                </div>
+                <div class="info-row">
+                    <span class="label">Модель:</span> ${data.device_model || 'Не указана'}
+                </div>
+                <div class="info-row">
+                    <span class="label">Серийный номер:</span> ${data.device_serial_number || 'Не указан'}
+                </div>
+                <div class="info-row">
+                    <span class="label">Описание проблемы:</span> ${data.problem_description || 'Не указана'}
+                </div>
+                <div class="info-row">
+                    <span class="label">Внешнее состояние:</span> ${data.device_condition || 'Не указано'}
+                </div>
+                <div class="info-row">
+                    <span class="label">Комплектность:</span> ${data.completeness || 'Не указана'}
+                </div>
+            </div>
+            
+            <div class="signature">
+                <div class="signature-row">
+                    <span>Клиент:</span>
+                    <span class="signature-line"></span>
+                    <span style="margin-left: 20px;">Дата: ${currentDate}</span>
+                </div>
+                <div class="signature-row">
+                    <span>Принял:</span>
+                    <span class="signature-line"></span>
+                    <span style="margin-left: 20px;">Дата: ${currentDate}</span>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+// Глобальная переменная для текущего заказа
+let currentPrintOrderId = null;
 
 // Export functions for global use
 window.createClient = createClient;
