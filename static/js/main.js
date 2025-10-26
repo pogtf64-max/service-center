@@ -575,25 +575,67 @@ function showAcceptanceAct(orderId) {
     currentPrintOrderId = orderId;
     
     // Показываем модальное окно предварительного просмотра
-    document.getElementById('previewDocumentType').textContent = 'Акт приема';
-    document.getElementById('previewDocumentTypeValue').value = 'acceptance_act';
+    const previewDocumentType = document.getElementById('previewDocumentType');
+    const previewDocumentTypeValue = document.getElementById('previewDocumentTypeValue');
+    const documentPreviewContent = document.getElementById('documentPreviewContent');
+    
+    if (previewDocumentType) {
+        previewDocumentType.textContent = 'Акт приема';
+    }
+    if (previewDocumentTypeValue) {
+        previewDocumentTypeValue.value = 'acceptance_act';
+    }
+    
+    // Показываем загрузку
+    if (documentPreviewContent) {
+        documentPreviewContent.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2">Загрузка акта приема...</p>
+            </div>
+        `;
+    }
+    
+    // Показываем модальное окно
+    const modal = document.getElementById('documentPreviewModal');
+    if (modal) {
+        new bootstrap.Modal(modal).show();
+    }
     
     // Загружаем данные заказа
     fetch(`/api/orders/${orderId}`)
         .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const previewContent = generateAcceptanceAct(data.data);
-                document.getElementById('previewContent').innerHTML = previewContent;
-                const modal = new bootstrap.Modal(document.getElementById('previewModal'));
-                modal.show();
-            } else {
-                showAlert('Ошибка при загрузке данных заказа: ' + data.message, 'danger');
+        .then(orderData => {
+            if (orderData.error) {
+                if (documentPreviewContent) {
+                    documentPreviewContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Ошибка загрузки данных заказа: ${orderData.error}
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            // Генерируем акт приема
+            const acceptanceActHtml = generateAcceptanceAct(orderData);
+            if (documentPreviewContent) {
+                documentPreviewContent.innerHTML = acceptanceActHtml;
             }
         })
         .catch(error => {
             console.error('Error loading order for acceptance act:', error);
-            showAlert('Ошибка при загрузке данных заказа: ' + error.message, 'danger');
+            if (documentPreviewContent) {
+                documentPreviewContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Ошибка загрузки данных заказа: ${error.message}
+                    </div>
+                `;
+            }
         });
 }
 
@@ -646,8 +688,45 @@ function openEditOrderModal(orderData) {
 }
 
 function showAcceptanceActModal(actData) {
-    // Показать акт приема
-    showAlert('Функция акта приема будет добавлена в следующей версии', 'info');
+    // Создаем модальное окно для акта приема
+    const modalHtml = `
+        <div class="modal fade" id="acceptanceActModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-file-text"></i> Акт приема оборудования в ремонт
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                        <div id="acceptanceActContent">
+                            ${generateAcceptanceAct(actData)}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="button" class="btn btn-primary" onclick="printAcceptanceAct()">
+                            <i class="bi bi-printer"></i> Печать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Удаляем существующее модальное окно
+    const existingModal = document.getElementById('acceptanceActModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Добавляем новое модальное окно
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Показываем модальное окно
+    const modal = new bootstrap.Modal(document.getElementById('acceptanceActModal'));
+    modal.show();
 }
 
 // Генерация АКТА ПРИЕМА
