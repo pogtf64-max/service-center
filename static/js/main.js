@@ -500,6 +500,117 @@ function initCashServiceAutocomplete() {
     });
 }
 
+// Order management functions
+async function viewOrder(orderId) {
+    try {
+        const result = await apiRequest(`/api/orders/${orderId}`);
+        if (result.success) {
+            // Показать модальное окно с деталями заказа
+            showOrderDetailsModal(result.data);
+        }
+    } catch (error) {
+        showAlert('Ошибка при загрузке заказа: ' + error.message, 'danger');
+    }
+}
+
+async function editOrder(orderId) {
+    try {
+        const result = await apiRequest(`/api/orders/${orderId}`);
+        if (result.success) {
+            // Открыть форму редактирования заказа
+            openEditOrderModal(result.data);
+        }
+    } catch (error) {
+        showAlert('Ошибка при загрузке заказа: ' + error.message, 'danger');
+    }
+}
+
+async function changeStatus(orderId) {
+    try {
+        const result = await apiRequest(`/api/orders/${orderId}/status`);
+        if (result.success) {
+            showAlert('Статус заказа изменен!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        }
+    } catch (error) {
+        showAlert('Ошибка при изменении статуса: ' + error.message, 'danger');
+    }
+}
+
+async function changeOrderStatus(orderId, newStatus) {
+    try {
+        const result = await apiRequest(`/api/orders/${orderId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: newStatus })
+        });
+        if (result.success) {
+            showAlert('Статус заказа изменен!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        }
+    } catch (error) {
+        showAlert('Ошибка при изменении статуса: ' + error.message, 'danger');
+    }
+}
+
+async function showAcceptanceAct(orderId) {
+    try {
+        const result = await apiRequest(`/api/orders/${orderId}/acceptance-act`);
+        if (result.success) {
+            // Показать акт приема
+            showAcceptanceActModal(result.data);
+        }
+    } catch (error) {
+        showAlert('Ошибка при загрузке акта приема: ' + error.message, 'danger');
+    }
+}
+
+// Modal functions
+function showOrderDetailsModal(orderData) {
+    // Создать и показать модальное окно с деталями заказа
+    const modalHtml = `
+        <div class="modal fade" id="orderDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Заказ #${orderData.id}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Клиент:</strong> ${orderData.client_name || 'Не указан'}</p>
+                        <p><strong>Устройство:</strong> ${orderData.device_type || 'Не указано'}</p>
+                        <p><strong>Проблема:</strong> ${orderData.problem_description || 'Не указана'}</p>
+                        <p><strong>Статус:</strong> ${orderData.status || 'Не указан'}</p>
+                        <p><strong>Стоимость:</strong> ${orderData.cost_estimate || 0} ₽</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Удалить существующее модальное окно
+    const existingModal = document.getElementById('orderDetailsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Добавить новое модальное окно
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Показать модальное окно
+    const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+    modal.show();
+}
+
+function openEditOrderModal(orderData) {
+    // Заполнить форму редактирования заказа
+    showAlert('Функция редактирования заказа будет добавлена в следующей версии', 'info');
+}
+
+function showAcceptanceActModal(actData) {
+    // Показать акт приема
+    showAlert('Функция акта приема будет добавлена в следующей версии', 'info');
+}
+
 // Export functions for global use
 window.createClient = createClient;
 window.createOrder = createOrder;
@@ -509,3 +620,8 @@ window.customAlert = customAlert;
 window.customConfirm = customConfirm;
 window.apiRequest = apiRequest;
 window.openDevTools = openDevTools;
+window.viewOrder = viewOrder;
+window.editOrder = editOrder;
+window.changeStatus = changeStatus;
+window.changeOrderStatus = changeOrderStatus;
+window.showAcceptanceAct = showAcceptanceAct;
