@@ -214,19 +214,50 @@ async function createClient() {
     }
 }
 
+// Toggle client fields based on client type
+function toggleClientFields() {
+    const clientType = document.getElementById('clientType')?.value;
+    const individualFields = document.getElementById('individualFields');
+    const legalFields = document.getElementById('legalFields');
+    
+    if (individualFields && legalFields) {
+        if (clientType === 'individual') {
+            individualFields.style.display = 'block';
+            legalFields.style.display = 'none';
+        } else if (clientType === 'legal') {
+            individualFields.style.display = 'none';
+            legalFields.style.display = 'block';
+        } else {
+            individualFields.style.display = 'none';
+            legalFields.style.display = 'none';
+        }
+    }
+}
+
 // Order management functions
 async function createOrder() {
     const form = document.getElementById('newOrderForm');
-    const formData = new FormData(form);
+    if (!form) {
+        console.error('Form not found');
+        return;
+    }
     
     const orderData = {
-        client_id: document.getElementById('clientSelect').value,
-        device_type: document.getElementById('deviceType').value,
-        device_brand: document.getElementById('deviceBrand').value,
-        device_model: document.getElementById('deviceModel').value,
-        problem_description: document.getElementById('problemDescription').value,
-        cost_estimate: parseFloat(document.getElementById('costEstimate').value) || 0,
-        master_id: document.getElementById('masterSelect').value || null
+        client_type: document.getElementById('clientType')?.value || '',
+        client_name: document.getElementById('clientName')?.value || '',
+        client_phone: document.getElementById('clientPhone')?.value || '',
+        client_address: document.getElementById('clientAddress')?.value || '',
+        client_email: document.getElementById('clientEmail')?.value || '',
+        organization_name: document.getElementById('organizationName')?.value || '',
+        inn: document.getElementById('inn')?.value || '',
+        device_type: document.getElementById('deviceType')?.value || '',
+        device_brand: document.getElementById('deviceBrand')?.value || '',
+        device_model: document.getElementById('deviceModel')?.value || '',
+        device_serial_number: document.getElementById('deviceSerialNumber')?.value || '',
+        device_imei: document.getElementById('deviceImei')?.value || '',
+        device_condition: document.getElementById('deviceCondition')?.value || '',
+        problem_description: document.getElementById('problemDescription')?.value || '',
+        completeness: document.getElementById('completeness')?.value || ''
     };
 
     try {
