@@ -47,7 +47,7 @@
                                 <p class="mb-1"><strong>Устройство:</strong> {{ order.device.name if order.device else 'Не указано' }}</p>
                                 <p class="mb-1"><strong>Мастер:</strong> {{ order.master.full_name if order.master else 'Не назначен' }}</p>
                                 <p class="mb-1"><strong>Дата приема:</strong> {{ order.created_at.strftime('%d.%m.%Y') }}</p>
-                                <p class="mb-1"><strong>Стоимость:</strong> <span id="order-cost-{{ order.id }}">{{ "%.2f"|format(order.total_cost) }} ₽</span></p>
+                                <p class="mb-1"><strong>Стоимость:</strong> <span id="order-cost-{{ order.id }}">{{ "%.2f"|format(order.final_cost) }} ₽</span></p>
                                 <p class="mb-0"><strong>Статус:</strong> 
                                     <span class="badge bg-{{ 'success' if order.status == 'ready' else 'warning' if order.status == 'received' else 'info' }}">
                                         {{ order.get_status_display() }}
