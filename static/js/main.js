@@ -574,18 +574,46 @@ function showAcceptanceAct(orderId) {
     console.log('showAcceptanceAct called with ID:', orderId);
     currentPrintOrderId = orderId;
     
-    // Показываем модальное окно предварительного просмотра
-    const previewDocumentType = document.getElementById('previewDocumentType');
-    const previewDocumentTypeValue = document.getElementById('previewDocumentTypeValue');
-    const documentPreviewContent = document.getElementById('documentPreviewContent');
-    const modal = document.getElementById('documentPreviewModal');
+    // Ждем загрузки DOM и ищем элементы
+    const findElements = () => {
+        const previewDocumentType = document.getElementById('previewDocumentType');
+        const previewDocumentTypeValue = document.getElementById('previewDocumentTypeValue');
+        const documentPreviewContent = document.getElementById('documentPreviewContent');
+        const modal = document.getElementById('documentPreviewModal');
+        
+        console.log('Elements found:', {
+            previewDocumentType: !!previewDocumentType,
+            previewDocumentTypeValue: !!previewDocumentTypeValue,
+            documentPreviewContent: !!documentPreviewContent,
+            modal: !!modal
+        });
+        
+        return { previewDocumentType, previewDocumentTypeValue, documentPreviewContent, modal };
+    };
     
-    console.log('Elements found:', {
-        previewDocumentType: !!previewDocumentType,
-        previewDocumentTypeValue: !!previewDocumentTypeValue,
-        documentPreviewContent: !!documentPreviewContent,
-        modal: !!modal
-    });
+    // Пробуем найти элементы сразу
+    let elements = findElements();
+    
+    // Если элементы не найдены, ждем и пробуем снова
+    if (!elements.modal) {
+        console.log('Elements not found, waiting for DOM...');
+        setTimeout(() => {
+            elements = findElements();
+            if (elements.modal) {
+                showAcceptanceActModal(elements, orderId);
+            } else {
+                console.error('Modal elements still not found after timeout');
+                alert('Ошибка: модальное окно не найдено. Попробуйте обновить страницу.');
+            }
+        }, 100);
+        return;
+    }
+    
+    showAcceptanceActModal(elements, orderId);
+}
+
+function showAcceptanceActModal(elements, orderId) {
+    const { previewDocumentType, previewDocumentTypeValue, documentPreviewContent, modal } = elements;
     
     if (previewDocumentType) {
         previewDocumentType.textContent = 'Акт приема';
