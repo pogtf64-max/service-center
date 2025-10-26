@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Присоединение к сервису{% endblock %}
+
+{% block content %}
+<div class="join-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <div class="join-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h1 class="join-title">Присоединение к сервису</h1>
+                    <p class="join-subtitle">Введите данные сервиса и создайте свой аккаунт</p>
+                </div>
+
+                <!-- Join Form -->
+                <div class="join-card">
+                    <form method="POST" action="{{ url_for('service.join_service') }}" id="joinForm">
+                        <!-- Service Information -->
+                        <div class="form-section">
+                            <h4 class="section-title">
+                                <i class="bi bi-building"></i>
+                                Данные сервиса
+                            </h4>
+                            
+                            <div class="mb-3">
+                                <label for="service_name" class="form-label">Название сервиса *</label>
+                                <input type="text" class="form-control" id="service_name" name="service_name" required>
+                                <div class="form-text">Получите название у директора сервиса</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="service_password" class="form-label">Пароль сервиса *</label>
+                                <input type="password" class="form-control" id="service_password" name="service_password" required>
+                                <div class="form-text">Получите пароль у директора сервиса</div>
+                            </div>
+                        </div>
+
+                        <!-- User Information -->
+                        <div class="form-section">
+                            <h4 class="section-title">
+                                <i class="bi bi-person"></i>
+                                Ваши данные
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="full_name" class="form-label">Полное имя *</label>
+                                        <input type="text" class="form-control" id="full_name" name="full_name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Имя пользователя *</label>
+                                        <input type="text" class="form-control" id="username" name="username" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Пароль *</label>
+                                        <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="role" class="form-label">Роль в сервисе *</label>
+                                        <select class="form-select" id="role" name="role" required>
+                                            <option value="">Выберите роль</option>
+                                            <option value="master">Мастер</option>
+                                            <option value="manager">Менеджер</option>
+                                            <option value="employee">Сотрудник</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">Телефон</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('auth.index') }}'">
+                                <i class="bi bi-arrow-left"></i>
+                                Назад
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i>
+                                Присоединиться
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Info -->
+                <div class="info-card">
+                    <div class="info-content">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <h5>Процесс присоединения:</h5>
+                            <ol>
+                                <li>Введите данные сервиса (получите у директора)</li>
+                                <li>Создайте свой аккаунт</li>
+                                <li>Дождитесь подтверждения директора</li>
+                                <li>Войдите в систему после подтверждения</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.join-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem 0;
+}
+
+.join-icon {
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.join-title {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.join-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+.join-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    color: #1f2937;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    color: #6366f1;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.info-card {
+    margin-top: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.info-content {
+    display: flex;
+    align-items: flex-start;
+    color: white;
+}
+
+.info-content i {
+    font-size: 1.2rem;
+    color: #60a5fa;
+    margin-right: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.info-content h5 {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.info-content ol {
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.info-content li {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+/* Улучшенный контраст для текста */
+.form-label {
+    color: #1f2937 !important;
+    font-weight: 600;
+}
+
+.form-text {
+    color: #6b7280 !important;
+    font-size: 0.875rem;
+}
+
+.text-muted {
+    color: #6b7280 !important;
+}
+
+@media (max-width: 768px) {
+    .join-title {
+        font-size: 1.25rem;
+    }
+    
+    .join-card {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+

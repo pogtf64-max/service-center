@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Клиенты{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-modern fade-in">
+    <h1 class="display-4 mb-3">
+        <i class="bi bi-people"></i> Управление клиентами
+    </h1>
+    <p class="lead mb-0">Добавление и управление клиентами сервисного центра</p>
+</div>
+
+<!-- Add Client Button -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-success-modern btn-modern" data-bs-toggle="modal" data-bs-target="#newClientModal">
+                <i class="bi bi-person-plus"></i> Добавить клиента
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Clients Table -->
+<div class="modern-card slide-in-left">
+    <div class="search-modern">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" class="form-control modern-form-control" id="searchClients" placeholder="Поиск клиентов...">
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table modern-table" id="clientsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Тип</th>
+                    <th>Имя</th>
+                    <th>Телефон</th>
+                    <th>Email</th>
+                    <th>Адрес</th>
+                    <th>Дата регистрации</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        <td>{{ client.id }}</td>
+                        <td>
+                            {% if client.client_type == 'individual' %}
+                                <span class="modern-badge badge-primary-modern">Физ. лицо</span>
+                            {% else %}
+                                <span class="modern-badge badge-success-modern">Юр. лицо</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ client.name }}</td>
+                        <td>{{ client.phone }}</td>
+                        <td>{{ client.email or '-' }}</td>
+                        <td>{{ client.address or '-' }}</td>
+                        <td>{{ client.created_at.strftime('%d.%m.%Y') if client.created_at else '-' }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-info-modern btn-modern" onclick="viewClient({{ client.id }})" title="Просмотр">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning-modern btn-modern" onclick="editClient({{ client.id }})" title="Редактировать">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger-modern btn-modern" onclick="deleteClient({{ client.id }})" title="Удалить">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- New Client Modal -->
+<div class="modal fade" id="newClientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus"></i> Добавить клиента
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newClientForm">
+                    <div class="mb-3">
+                        <label for="clientType" class="form-label">Тип клиента *</label>
+                        <select class="form-select" id="clientType" required onchange="toggleClientFields()">
+                            <option value="">Выберите тип</option>
+                            <option value="individual">Физическое лицо</option>
+                            <option value="legal">Юридическое лицо</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="clientName" class="form-label" id="clientNameLabel">Имя *</label>
+                        <input type="text" class="form-control" id="clientName" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="clientPhone" class="form-label">Телефон *</label>
+                        <input type="tel" class="form-control" id="clientPhone" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="clientEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="clientEmail">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="clientAddress" class="form-label">Адрес</label>
+                        <textarea class="form-control" id="clientAddress" rows="2"></textarea>
+                    </div>
+                    
+                    <!-- Дополнительные поля для юридических лиц -->
+                    <div id="legalFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="organizationName" class="form-label">Наименование организации *</label>
+                            <input type="text" class="form-control" id="organizationName" placeholder="Введите наименование организации">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="inn" class="form-label">ИНН организации *</label>
+                            <input type="text" class="form-control" id="inn" placeholder="Введите ИНН организации" maxlength="12">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="clientNotes" class="form-label">Примечания</label>
+                        <textarea class="form-control" id="clientNotes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-success" onclick="createClient()">
+                    <i class="bi bi-check-circle"></i> Добавить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Маска для телефона
+function formatPhoneNumber(input) {
+    let value = input.value.replace(/\D/g, ''); // Убираем все нецифровые символы
+    
+    if (value.length === 0) {
+        input.value = '';
+        return;
+    }
+    
+    if (value.startsWith('8')) {
+        value = '7' + value.substring(1);
+    }
+    
+    if (!value.startsWith('7')) {
+        value = '7' + value;
+    }
+    
+    if (value.length > 11) {
+        value = value.substring(0, 11);
+    }
+    
+    let formatted = '+7';
+    if (value.length > 1) {
+        formatted += ' (' + value.substring(1, 4);
+    }
+    if (value.length >= 4) {
+        formatted += ') ' + value.substring(4, 7);
+    }
+    if (value.length >= 7) {
+        formatted += ' ' + value.substring(7, 9);
+    }
+    if (value.length >= 9) {
+        formatted += ' ' + value.substring(9, 11);
+    }
+    
+    input.value = formatted;
+}
+
+// Применяем маску к полю телефона
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('clientPhone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            formatPhoneNumber(this);
+        });
+    }
+});
+
+// Переключение полей в зависимости от типа клиента
+function toggleClientFields() {
+    const clientType = document.getElementById('clientType').value;
+    const nameLabel = document.getElementById('clientNameLabel');
+    const nameInput = document.getElementById('clientName');
+    const legalFields = document.getElementById('legalFields');
+    const organizationName = document.getElementById('organizationName');
+    const inn = document.getElementById('inn');
+    
+    if (clientType === 'individual') {
+        nameLabel.textContent = 'ФИО клиента *';
+        nameInput.placeholder = 'Введите ФИО клиента';
+        legalFields.style.display = 'none';
+        organizationName.required = false;
+        inn.required = false;
+    } else if (clientType === 'legal') {
+        nameLabel.textContent = 'Контактное лицо *';
+        nameInput.placeholder = 'Введите ФИО контактного лица';
+        legalFields.style.display = 'block';
+        organizationName.required = true;
+        inn.required = true;
+    } else {
+        legalFields.style.display = 'none';
+        organizationName.required = false;
+        inn.required = false;
+    }
+}
+
+function viewClient(clientId) {
+    // Реализация просмотра клиента
+    console.log('View client:', clientId);
+}
+
+function editClient(clientId) {
+    // Реализация редактирования клиента
+    console.log('Edit client:', clientId);
+}
+
+function deleteClient(clientId) {
+    if (confirm('Вы уверены, что хотите удалить этого клиента?')) {
+        // Реализация удаления клиента
+        console.log('Delete client:', clientId);
+    }
+}
+
+function createClient() {
+    const form = document.getElementById('newClientForm');
+    const formData = new FormData(form);
+    
+    const clientData = {
+        client_type: document.getElementById('clientType').value,
+        name: document.getElementById('clientName').value,
+        phone: document.getElementById('clientPhone').value,
+        email: document.getElementById('clientEmail').value,
+        address: document.getElementById('clientAddress').value,
+        organization_name: document.getElementById('organizationName').value,
+        inn: document.getElementById('inn').value,
+        notes: document.getElementById('clientNotes').value
+    };
+    
+    // AJAX запрос для создания клиента
+    fetch('/api/clients', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(clientData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Ошибка при создании клиента');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка при создании клиента');
+    });
+}
+</script>
+{% endblock %}
+

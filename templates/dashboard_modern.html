@@ -1,0 +1,593 @@
+{% extends "base.html" %}
+
+{% block title %}Панель управления{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern Dashboard Styles */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --shadow-soft: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --shadow-hover: 0 15px 35px rgba(31, 38, 135, 0.2);
+}
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.modern-dashboard {
+    padding: 2rem 0;
+}
+
+/* Glassmorphism Cards */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-soft);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* Gradient Cards */
+.gradient-card {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 20px;
+    color: white;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.gradient-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+}
+
+.gradient-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+/* Stats Cards */
+.stats-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-gradient);
+}
+
+.stats-card.success::before {
+    background: var(--success-gradient);
+}
+
+.stats-card.warning::before {
+    background: var(--warning-gradient);
+}
+
+.stats-card.info::before {
+    background: var(--info-gradient);
+}
+
+.stats-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* Modern Buttons */
+.btn-modern {
+    border-radius: 15px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-modern:hover::before {
+    left: 100%;
+}
+
+.btn-primary-modern {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn-success-modern {
+    background: var(--success-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(17, 153, 142, 0.3);
+}
+
+.btn-warning-modern {
+    background: var(--warning-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+}
+
+.btn-info-modern {
+    background: var(--info-gradient);
+    color: white;
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+}
+
+/* Welcome Section */
+.welcome-section {
+    background: var(--primary-gradient);
+    border-radius: 25px;
+    padding: 2rem;
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-soft);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+/* Service Info Card */
+.service-info-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    border-left: 5px solid;
+    border-image: var(--info-gradient) 1;
+}
+
+/* Cash Register Card */
+.cash-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.cash-header {
+    background: var(--success-gradient);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 15px 15px 0 0;
+    margin: -2rem -2rem 1.5rem -2rem;
+    font-weight: 600;
+}
+
+/* Quick Actions */
+.quick-actions {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.action-btn {
+    background: white;
+    border: 2px solid #f0f0f0;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.action-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-color: #667eea;
+    color: inherit;
+    text-decoration: none;
+}
+
+.action-btn i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* Recent Orders */
+.recent-orders {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Stats Numbers */
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stats-card.success .stats-number {
+    background: var(--success-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stats-card.warning .stats-number {
+    background: var(--warning-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stats-card.info .stats-number {
+    background: var(--info-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modern-dashboard {
+        padding: 1rem 0;
+    }
+    
+    .welcome-section {
+        padding: 1.5rem;
+    }
+    
+    .stats-card {
+        margin-bottom: 1rem;
+    }
+    
+    .action-btn {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="modern-dashboard">
+    <!-- Welcome Section -->
+    <div class="welcome-section fade-in">
+        <h1 class="display-4 mb-3">
+            <i class="bi bi-speedometer2"></i> Добро пожаловать, {{ current_user.full_name }}!
+        </h1>
+        <p class="lead mb-0">Панель управления сервисным центром</p>
+    </div>
+
+    <!-- Service Center Information -->
+    {% if service %}
+    <div class="service-info-card slide-in-left">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-building"></i> Информация о сервисном центре
+                </h5>
+                <h4 class="mb-3">{{ service.name }}</h4>
+                {% if service.address %}
+                <p class="mb-2">
+                    <i class="bi bi-geo-alt text-muted"></i> {{ service.address }}
+                </p>
+                {% endif %}
+                {% if service.phone %}
+                <p class="mb-2">
+                    <i class="bi bi-telephone text-muted"></i> {{ service.phone }}
+                </p>
+                {% endif %}
+                {% if service.email %}
+                <p class="mb-0">
+                    <i class="bi bi-envelope text-muted"></i> {{ service.email }}
+                </p>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-building text-primary" style="font-size: 4rem;"></i>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-2">Заказы в работе</h6>
+                        <h2 class="stats-number">{{ orders_in_progress }}</h2>
+                    </div>
+                    <div class="ms-3">
+                        <i class="bi bi-lightning-charge text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card success fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-2">Готовые к выдаче</h6>
+                        <h2 class="stats-number">{{ ready_orders }}</h2>
+                    </div>
+                    <div class="ms-3">
+                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card info fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-2">Всего клиентов</h6>
+                        <h2 class="stats-number">{{ total_clients }}</h2>
+                    </div>
+                    <div class="ms-3">
+                        <i class="bi bi-people text-info" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stats-card warning fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-2">Всего заказов</h6>
+                        <h2 class="stats-number">{{ total_orders }}</h2>
+                    </div>
+                    <div class="ms-3">
+                        <i class="bi bi-clipboard-check text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Register Card -->
+    <div class="cash-card slide-in-left">
+        <div class="cash-header">
+            <h5 class="mb-0">
+                <i class="bi bi-cash-stack"></i> Касса
+            </h5>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="text-center">
+                    <h6 class="text-muted mb-2">Общая касса</h6>
+                    <h3 class="text-success mb-3">{{ "%.2f"|format(total_cash) }} ₽</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-info-modern btn-modern btn-sm" onclick="showCashHistory()">
+                            <i class="bi bi-clock-history"></i> История
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="refreshCash()">
+                            <i class="bi bi-arrow-clockwise"></i> Обновить
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-center">
+                    <h6 class="text-muted mb-2">За сегодня</h6>
+                    <h3 class="text-primary mb-3">{{ "%.2f"|format(today_cash) }} ₽</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-warning-modern btn-modern btn-sm" onclick="removeCash()">
+                            <i class="bi bi-dash-circle"></i> Убрать
+                        </button>
+                        <button class="btn btn-success-modern btn-modern btn-sm" onclick="addCash()">
+                            <i class="bi bi-plus-circle"></i> Добавить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions slide-in-right">
+        <h5 class="text-primary mb-4">
+            <i class="bi bi-lightning-charge"></i> Быстрые действия
+        </h5>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <a href="{{ url_for('orders.add') }}" class="action-btn">
+                    <i class="bi bi-plus-circle text-success"></i>
+                    <h6 class="mb-0">Новый заказ</h6>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <a href="{{ url_for('clients.add') }}" class="action-btn">
+                    <i class="bi bi-person-plus text-info"></i>
+                    <h6 class="mb-0">Добавить клиента</h6>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <a href="{{ url_for('parts.index') }}" class="action-btn">
+                    <i class="bi bi-box-seam text-warning"></i>
+                    <h6 class="mb-0">Управление запчастями</h6>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <a href="{{ url_for('orders.index') }}" class="action-btn">
+                    <i class="bi bi-list-ul text-primary"></i>
+                    <h6 class="mb-0">Все заказы</h6>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="recent-orders slide-in-left">
+        <h5 class="text-primary mb-4">
+            <i class="bi bi-clock-history"></i> Последние заказы
+        </h5>
+        {% if recent_orders %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Клиент</th>
+                        <th>Устройство</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td>{{ order.client.name }}</td>
+                        <td>{{ order.device.brand }} {{ order.device.model }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'primary' if order.status == 'received' else 'warning' if order.status == 'diagnosis' else 'info' if order.status == 'repair' else 'success' }} rounded-pill">
+                                {{ order.get_status_display() }}
+                            </span>
+                        </td>
+                        <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-clipboard text-muted" style="font-size: 4rem;"></i>
+            <h5 class="text-muted mt-3">Нет заказов</h5>
+            <p class="text-muted">Создайте первый заказ для начала работы</p>
+            <a href="{{ url_for('orders.add') }}" class="btn btn-primary-modern btn-modern">
+                <i class="bi bi-plus-circle"></i> Создать заказ
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Cash functions
+function showCashHistory() {
+    alert('История кассы');
+}
+
+function refreshCash() {
+    location.reload();
+}
+
+function removeCash() {
+    alert('Убрать деньги из кассы');
+}
+
+function addCash() {
+    alert('Добавить деньги в кассу');
+}
+
+// Add animation delays
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,681 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки системы{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Заголовок страницы -->
+    <div class="page-header-modern fade-in">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="flex-grow-1">
+                <h1 class="display-4 mb-3">
+                    <i class="bi bi-gear"></i> Настройки системы
+                </h1>
+                <p class="lead" style="color: rgba(255, 255, 255, 0.9); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);">Управление сервисным центром, ролями сотрудников и системными параметрами</p>
+            </div>
+            <div class="ms-3">
+                <i class="bi bi-gear" style="font-size: 4rem; color: rgba(255, 255, 255, 0.8); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Навигация по разделам -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-pills nav-fill" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="service-tab" data-bs-toggle="pill" data-bs-target="#service" type="button" role="tab">
+                        <i class="bi bi-building"></i> Реквизиты сервиса
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab">
+                        <i class="bi bi-people"></i> Сотрудники
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="permissions-tab" data-bs-toggle="pill" data-bs-target="#permissions" type="button" role="tab">
+                        <i class="bi bi-shield-check"></i> Права доступа
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Содержимое вкладок -->
+    <div class="tab-content" id="settingsTabContent">
+        <!-- Реквизиты сервиса -->
+        <div class="tab-pane fade show active" id="service" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-building"></i> Информация о сервисном центре</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="serviceForm">
+                                <!-- Основная информация -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                            <i class="bi bi-info-circle"></i> Основная информация
+                                        </h6>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceName" class="form-label">Полное наименование *</label>
+                                            <input type="text" class="form-control" id="serviceName" value="{{ service.name if service else '' }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceShortName" class="form-label">Сокращенное наименование</label>
+                                            <input type="text" class="form-control" id="serviceShortName" value="{{ service.short_name if service else '' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="servicePhone" class="form-label">Телефон</label>
+                                            <input type="tel" class="form-control" id="servicePhone" value="{{ service.phone if service else '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceEmail" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="serviceEmail" value="{{ service.email if service else '' }}">
+                                        </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceWebsite" class="form-label">Веб-сайт</label>
+                                            <input type="url" class="form-control" id="serviceWebsite" value="{{ service.website if service else '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceWorkingHours" class="form-label">Режим работы</label>
+                                            <input type="text" class="form-control" id="serviceWorkingHours" value="{{ service.working_hours if service else '' }}" placeholder="Пн-Пт: 9:00-18:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="serviceAddress" class="form-label">Фактический адрес</label>
+                                    <textarea class="form-control" id="serviceAddress" rows="2">{{ service.address if service else '' }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="serviceLegalAddress" class="form-label">Юридический адрес</label>
+                                    <textarea class="form-control" id="serviceLegalAddress" rows="2">{{ service.legal_address if service else '' }}</textarea>
+                                </div>
+                                
+                                <!-- Юридические реквизиты -->
+                                <div class="row mb-4 mt-4">
+                                    <div class="col-12">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                            <i class="bi bi-file-text"></i> Юридические реквизиты
+                                        </h6>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="serviceInn" class="form-label">ИНН</label>
+                                            <input type="text" class="form-control" id="serviceInn" value="{{ service.inn if service else '' }}" maxlength="12">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="serviceKpp" class="form-label">КПП</label>
+                                            <input type="text" class="form-control" id="serviceKpp" value="{{ service.kpp if service else '' }}" maxlength="9">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="serviceOgrn" class="form-label">ОГРН</label>
+                                            <input type="text" class="form-control" id="serviceOgrn" value="{{ service.ogrn if service else '' }}" maxlength="15">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceOkpo" class="form-label">ОКПО</label>
+                                            <input type="text" class="form-control" id="serviceOkpo" value="{{ service.okpo if service else '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceOkved" class="form-label">ОКВЭД</label>
+                                            <input type="text" class="form-control" id="serviceOkved" value="{{ service.okved if service else '' }}" placeholder="95.21, 71.20">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Банковские реквизиты -->
+                                <div class="row mb-4 mt-4">
+                                    <div class="col-12">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                            <i class="bi bi-bank"></i> Банковские реквизиты
+                                        </h6>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="serviceBankName" class="form-label">Наименование банка</label>
+                                    <input type="text" class="form-control" id="serviceBankName" value="{{ service.bank_name if service else '' }}">
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="serviceBankBik" class="form-label">БИК</label>
+                                            <input type="text" class="form-control" id="serviceBankBik" value="{{ service.bank_bik if service else '' }}" maxlength="9">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="serviceBankAccount" class="form-label">Расчетный счет</label>
+                                            <input type="text" class="form-control" id="serviceBankAccount" value="{{ service.bank_account if service else '' }}" maxlength="20">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="serviceBankCorrespondentAccount" class="form-label">Корреспондентский счет</label>
+                                            <input type="text" class="form-control" id="serviceBankCorrespondentAccount" value="{{ service.bank_correspondent_account if service else '' }}" maxlength="20">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Руководство -->
+                                <div class="row mb-4 mt-4">
+                                    <div class="col-12">
+                                        <h6 class="text-primary border-bottom pb-2 mb-3">
+                                            <i class="bi bi-person-badge"></i> Руководство
+                                        </h6>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceDirectorName" class="form-label">ФИО директора</label>
+                                            <input type="text" class="form-control" id="serviceDirectorName" value="{{ service.director_name if service else '' }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="serviceChiefAccountant" class="form-label">ФИО главного бухгалтера</label>
+                                            <input type="text" class="form-control" id="serviceChiefAccountant" value="{{ service.chief_accountant if service else '' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-primary" onclick="updateService()">
+                                        <i class="bi bi-save"></i> Сохранить изменения
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-info-circle"></i> Информация</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted">
+                                Здесь вы можете изменить основные реквизиты вашего сервисного центра. 
+                                Эти данные будут использоваться в документах и отчетах.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Управление сотрудниками -->
+        <div class="tab-pane fade" id="users" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-people"></i> Сотрудники сервисного центра</h5>
+                            <button class="btn btn-success btn-sm" onclick="showAddUserModal()">
+                                <i class="bi bi-person-plus"></i> Добавить сотрудника
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ФИО</th>
+                                            <th>Роль</th>
+                                            <th>Статус</th>
+                                            <th>Настройки</th>
+                                            <th>Дата создания</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in users %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ user.full_name }}</strong>
+                                                <br><small class="text-muted">{{ user.username }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'primary' if user.role == 'director' else 'secondary' if user.role == 'manager' else 'info' if user.role == 'master' else 'light' }}">
+                                                    {{ user.get_role_display() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if user.is_active %}
+                                                    <span class="badge bg-success">Активен</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Заблокирован</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if user.role != 'director' %}
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           id="settingsPermission{{ user.id }}" 
+                                                           {% if user.can_manage_settings %}checked{% endif %}
+                                                           onchange="toggleSettingsPermission({{ user.id }}, this.checked)">
+                                                    <label class="form-check-label" for="settingsPermission{{ user.id }}">
+                                                        <small class="text-muted">Управление настройками</small>
+                                                    </label>
+                                                </div>
+                                                {% else %}
+                                                <span class="badge bg-primary">Директор</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ user.created_at.strftime('%d.%m.%Y') if user.created_at else 'Не указано' }}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" onclick="editUser({{ user.id }})" title="Редактировать">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    {% if user.role != 'director' %}
+                                                    <button class="btn btn-outline-{{ 'danger' if user.is_active else 'success' }}" 
+                                                            onclick="toggleUserStatus({{ user.id }}, {{ 'false' if user.is_active else 'true' }})"
+                                                            title="{{ 'Заблокировать' if user.is_active else 'Активировать' }}">
+                                                        <i class="bi bi-{{ 'ban' if user.is_active else 'check' }}"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-warning" onclick="resetPassword({{ user.id }})" title="Сбросить пароль">
+                                                        <i class="bi bi-key"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Права доступа -->
+        <div class="tab-pane fade" id="permissions" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-shield-check"></i> Система прав доступа</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Информация:</strong> Система детальных прав доступа находится в разработке. 
+                                В настоящее время доступ к настройкам имеют только директора.
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Текущие роли:</h6>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span><i class="bi bi-crown text-warning"></i> Директор</span>
+                                            <span class="badge bg-primary">Полный доступ</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span><i class="bi bi-person-badge text-info"></i> Менеджер</span>
+                                            <span class="badge bg-secondary">Управление заказами</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span><i class="bi bi-tools text-success"></i> Мастер</span>
+                                            <span class="badge bg-info">Работа с заказами</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span><i class="bi bi-person text-muted"></i> Сотрудник</span>
+                                            <span class="badge bg-light text-dark">Базовый доступ</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <h6>Планируемые функции:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="bi bi-check-circle text-success"></i> Детальные права доступа</li>
+                                        <li><i class="bi bi-check-circle text-success"></i> Настройка ролей</li>
+                                        <li><i class="bi bi-check-circle text-success"></i> Временные разрешения</li>
+                                        <li><i class="bi bi-check-circle text-success"></i> Аудит действий</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования пользователя -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Редактирование пользователя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" id="editUserId">
+                    <div class="mb-3">
+                        <label for="editUserRole" class="form-label">Роль</label>
+                        <select class="form-select" id="editUserRole">
+                            <option value="employee">Сотрудник</option>
+                            <option value="master">Мастер</option>
+                            <option value="manager">Менеджер</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="saveUserChanges()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для сброса пароля -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Сброс пароля</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="resetPasswordForm">
+                    <input type="hidden" id="resetPasswordUserId">
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Новый пароль</label>
+                        <input type="password" class="form-control" id="newPassword" required minlength="6">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Подтверждение пароля</label>
+                        <input type="password" class="form-control" id="confirmPassword" required minlength="6">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-warning" onclick="saveNewPassword()">Сбросить пароль</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Обновление реквизитов сервиса
+function updateService() {
+    const data = {
+        // Основная информация
+        name: document.getElementById('serviceName').value,
+        short_name: document.getElementById('serviceShortName').value,
+        address: document.getElementById('serviceAddress').value,
+        legal_address: document.getElementById('serviceLegalAddress').value,
+        phone: document.getElementById('servicePhone').value,
+        email: document.getElementById('serviceEmail').value,
+        website: document.getElementById('serviceWebsite').value,
+        working_hours: document.getElementById('serviceWorkingHours').value,
+        
+        // Юридические реквизиты
+        inn: document.getElementById('serviceInn').value,
+        kpp: document.getElementById('serviceKpp').value,
+        ogrn: document.getElementById('serviceOgrn').value,
+        okpo: document.getElementById('serviceOkpo').value,
+        okved: document.getElementById('serviceOkved').value,
+        
+        // Банковские реквизиты
+        bank_name: document.getElementById('serviceBankName').value,
+        bank_bik: document.getElementById('serviceBankBik').value,
+        bank_account: document.getElementById('serviceBankAccount').value,
+        bank_correspondent_account: document.getElementById('serviceBankCorrespondentAccount').value,
+        
+        // Руководство
+        director_name: document.getElementById('serviceDirectorName').value,
+        chief_accountant: document.getElementById('serviceChiefAccountant').value
+    };
+    
+    fetch('/settings/update-service', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Успех', data.message, 'success');
+        } else {
+            showNotification('Ошибка', data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка', 'Произошла ошибка при обновлении', 'error');
+    });
+}
+
+// Переключение статуса пользователя
+function toggleUserStatus(userId, isActive) {
+    const data = {
+        user_id: userId,
+        is_active: isActive
+    };
+    
+    fetch('/settings/update-user-status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Успех', data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification('Ошибка', data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка', 'Произошла ошибка', 'error');
+    });
+}
+
+// Редактирование пользователя
+function editUser(userId) {
+    document.getElementById('editUserId').value = userId;
+    new bootstrap.Modal(document.getElementById('editUserModal')).show();
+}
+
+// Сохранение изменений пользователя
+function saveUserChanges() {
+    const userId = document.getElementById('editUserId').value;
+    const role = document.getElementById('editUserRole').value;
+    
+    const data = {
+        user_id: userId,
+        role: role
+    };
+    
+    fetch('/settings/update-user-role', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Успех', data.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification('Ошибка', data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка', 'Произошла ошибка', 'error');
+    });
+}
+
+// Сброс пароля
+function resetPassword(userId) {
+    document.getElementById('resetPasswordUserId').value = userId;
+    new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
+}
+
+// Сохранение нового пароля
+function saveNewPassword() {
+    const userId = document.getElementById('resetPasswordUserId').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        showNotification('Ошибка', 'Пароли не совпадают', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showNotification('Ошибка', 'Пароль должен содержать минимум 6 символов', 'error');
+        return;
+    }
+    
+    const data = {
+        user_id: userId,
+        new_password: newPassword
+    };
+    
+    fetch('/settings/reset-user-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Успех', data.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide();
+            document.getElementById('resetPasswordForm').reset();
+        } else {
+            showNotification('Ошибка', data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка', 'Произошла ошибка', 'error');
+    });
+}
+
+// Переключение разрешения на управление настройками
+function toggleSettingsPermission(userId, canManage) {
+    const data = {
+        user_id: userId,
+        can_manage: canManage
+    };
+    
+    fetch('/settings/update-user-settings-permission', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Успех', data.message, 'success');
+        } else {
+            showNotification('Ошибка', data.message, 'error');
+            // Возвращаем переключатель в исходное состояние
+            const checkbox = document.getElementById(`settingsPermission${userId}`);
+            if (checkbox) {
+                checkbox.checked = !canManage;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка', 'Произошла ошибка при обновлении разрешения', 'error');
+        // Возвращаем переключатель в исходное состояние
+        const checkbox = document.getElementById(`settingsPermission${userId}`);
+        if (checkbox) {
+            checkbox.checked = !canManage;
+        }
+    });
+}
+
+// Показать уведомление
+function showNotification(title, message, type) {
+    // Создаем уведомление
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        <strong>${title}:</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Автоматически скрываем через 5 секунд
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

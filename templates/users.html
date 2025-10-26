@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Управление пользователями{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people"></i> Управление пользователями</h1>
+    <div>
+        <span class="badge bg-warning">{{ pending_users|length }} ожидают подтверждения</span>
+    </div>
+</div>
+
+<!-- Pending Users -->
+{% if pending_users %}
+<div class="card shadow mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="bi bi-clock-history"></i> Ожидают подтверждения
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Имя пользователя</th>
+                        <th>Роль</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th>Дата подачи</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in pending_users %}
+                    <tr>
+                        <td>{{ user.full_name }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>
+                            <span class="badge bg-info">{{ user.role }}</span>
+                        </td>
+                        <td>{{ user.email or '-' }}</td>
+                        <td>{{ user.phone or '-' }}</td>
+                        <td>{{ user.created_at.strftime('%d.%m.%Y %H:%M') if user.created_at else '-' }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-success" onclick="approveUser({{ user.id }})">
+                                    <i class="bi bi-check-circle"></i> Подтвердить
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="rejectUser({{ user.id }})">
+                                    <i class="bi bi-x-circle"></i> Отклонить
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- All Users -->
+<div class="card shadow">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-people-fill"></i> Все пользователи сервиса
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Имя пользователя</th>
+                        <th>Роль</th>
+                        <th>Email</th>
+                        <th>Телефон</th>
+                        <th>Статус</th>
+                        <th>Последний вход</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.full_name }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'primary' if user.role == 'director' else 'info' if user.role == 'manager' else 'success' if user.role == 'master' else 'secondary' }}">
+                                {{ user.get_role_display() }}
+                            </span>
+                        </td>
+                        <td>{{ user.email or '-' }}</td>
+                        <td>{{ user.phone or '-' }}</td>
+                        <td>
+                            {% if user.is_approved %}
+                                <span class="badge bg-success">Подтвержден</span>
+                            {% else %}
+                                <span class="badge bg-warning">Ожидает</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Никогда' }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewUser({{ user.id }})">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                {% if user.role != 'director' %}
+                                <button class="btn btn-sm btn-outline-warning" onclick="editUser({{ user.id }})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deactivateUser({{ user.id }})">
+                                    <i class="bi bi-person-x"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function approveUser(userId) {
+    const confirmed = await customConfirm(
+        'Подтвердить этого пользователя?', 
+        'Подтверждение пользователя'
+    );
+    
+    if (confirmed) {
+        fetch(`/api/users/${userId}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                customAlert('Пользователь подтвержден!', 'Успех', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                customAlert('Ошибка: ' + data.message, 'Ошибка', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            customAlert('Ошибка при подтверждении пользователя', 'Ошибка', 'error');
+        });
+    }
+}
+
+async function rejectUser(userId) {
+    const confirmed = await customConfirm(
+        'Отклонить этого пользователя? Данные будут удалены навсегда!', 
+        'Отклонение пользователя'
+    );
+    
+    if (confirmed) {
+        fetch(`/api/users/${userId}/reject`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                customAlert('Пользователь отклонен!', 'Успех', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                customAlert('Ошибка: ' + data.message, 'Ошибка', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            customAlert('Ошибка при отклонении пользователя', 'Ошибка', 'error');
+        });
+    }
+}
+
+function viewUser(userId) {
+    // Реализация просмотра пользователя
+    console.log('View user:', userId);
+}
+
+function editUser(userId) {
+    // Реализация редактирования пользователя
+    console.log('Edit user:', userId);
+}
+
+async function deactivateUser(userId) {
+    const confirmed = await customConfirm(
+        'Деактивировать этого пользователя?', 
+        'Деактивация пользователя'
+    );
+    
+    if (confirmed) {
+        // Реализация деактивации пользователя
+        console.log('Deactivate user:', userId);
+        customAlert('Пользователь деактивирован!', 'Успех', 'success');
+    }
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block title %}Панель управления{% endblock %}
+
+{% block content %}
+<div class="dashboard-compact">
+<!-- Welcome Section -->
+<div class="row mb-3 welcome-section">
+    <div class="col-12">
+        <div class="card bg-gradient-primary text-white">
+            <div class="card-body py-3">
+                <h1 class="card-title mb-1">
+                    <i class="bi bi-speedometer2"></i> Добро пожаловать, {{ current_user.full_name }}!
+                </h1>
+                <p class="card-text mb-0">Панель управления сервисным центром</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Center Information -->
+{% if service %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card border-left-info shadow h-100">
+            <div class="card-body py-3">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            <i class="bi bi-building"></i> Информация о сервисном центре
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ service.name }}</div>
+                        {% if service.address %}
+                        <div class="text-muted small mt-1">
+                            <i class="bi bi-geo-alt"></i> {{ service.address }}
+                        </div>
+                        {% endif %}
+                        {% if service.phone %}
+                        <div class="text-muted small">
+                            <i class="bi bi-telephone"></i> {{ service.phone }}
+                        </div>
+                        {% endif %}
+                        {% if service.email %}
+                        <div class="text-muted small">
+                            <i class="bi bi-envelope"></i> {{ service.email }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-building text-info" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Compact Statistics Grid -->
+<div class="row mb-3">
+    <div class="col-xl-3 col-md-6 mb-2">
+        <div class="card border-left-primary shadow h-100 stats-card-compact">
+            <div class="card-body py-2">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Заказы в работе
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ orders_in_progress }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-lightning-charge text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-2">
+        <div class="card border-left-success shadow h-100 stats-card-compact">
+            <div class="card-body py-2">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Готовые к выдаче
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ ready_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-check-circle text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-2">
+        <div class="card border-left-info shadow h-100 stats-card-compact">
+            <div class="card-body py-2">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Всего клиентов
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_clients }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-people text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-2">
+        <div class="card border-left-warning shadow h-100 stats-card-compact">
+            <div class="card-body py-2">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Всего заказов
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-clipboard-check text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Combined Cash Register Card -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-gradient-success text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="bi bi-cash-stack"></i> Касса
+                </h6>
+            </div>
+            <div class="card-body py-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Общая касса</h6>
+                                <h4 class="mb-0 text-success">{{ "%.2f"|format(total_cash) }} ₽</h4>
+                            </div>
+                            <div class="btn-group ml-3">
+                                <button class="btn btn-sm btn-outline-info" onclick="showCashHistory()">
+                                    <i class="bi bi-clock-history"></i> История
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="refreshCash()">
+                                    <i class="bi bi-arrow-clockwise"></i> Обновить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">За сегодня</h6>
+                                <h4 class="mb-0 text-primary">{{ "%.2f"|format(today_cash) }} ₽</h4>
+                            </div>
+                            <div class="btn-group ml-3">
+                                <button class="btn btn-sm btn-outline-warning" onclick="removeCash()">
+                                    <i class="bi bi-dash-circle"></i> Убрать
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="addCash()">
+                                    <i class="bi bi-plus-circle"></i> Добавить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Compact Quick Actions -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-lightning-charge"></i> Быстрые действия
+                </h6>
+            </div>
+            <div class="card-body py-3">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{{ url_for('orders.add') }}" class="btn btn-success btn-block btn-sm">
+                            <i class="bi bi-plus-circle"></i> Новый заказ
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{{ url_for('clients.add') }}" class="btn btn-info btn-block btn-sm">
+                            <i class="bi bi-person-plus"></i> Добавить клиента
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{{ url_for('parts.index') }}" class="btn btn-warning btn-block btn-sm">
+                            <i class="bi bi-box-seam"></i> Запчасти
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{{ url_for('orders.index') }}" class="btn btn-primary btn-block btn-sm">
+                            <i class="bi bi-list-ul"></i> Все заказы
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders with Additional Info -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-clock-history"></i> Последние заказы
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if recent_orders %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Клиент</th>
+                                <th>Устройство</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>{{ order.id }}</td>
+                                <td>{{ order.client.name }}</td>
+                                <td>{{ order.device.brand }} {{ order.device.model }}</td>
+                                <td>
+                                    <span class="badge badge-{{ 'primary' if order.status == 'received' else 'warning' if order.status == 'diagnosis' else 'info' if order.status == 'repair' else 'success' }}">
+                                        {{ order.get_status_display() }}
+                                    </span>
+                                </td>
+                                <td>{{ order.created_at.strftime('%d.%m.%Y') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-clipboard text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">Нет заказов</p>
+                    <a href="{{ url_for('orders.add') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Создать первый заказ
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Info Widget -->
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="bi bi-info-circle"></i> Полезная информация
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary">Статистика за сегодня</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="bi bi-check-circle text-success"></i> Заказов принято: 0</li>
+                        <li><i class="bi bi-gear text-warning"></i> В работе: {{ orders_in_progress }}</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Готово: {{ ready_orders }}</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-primary">Быстрые ссылки</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('services.index') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-gear"></i> Услуги
+                        </a>
+                        <a href="{{ url_for('devices.index') }}" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-laptop"></i> Устройства
+                        </a>
+                        <a href="{{ url_for('archive.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-archive"></i> Архив
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<style>
+.dashboard-compact .stats-card-compact {
+    min-height: 80px;
+}
+
+.dashboard-compact .card-body {
+    padding: 0.75rem;
+}
+
+.dashboard-compact .btn-group .btn {
+    font-size: 0.8rem;
+}
+
+.dashboard-compact .table-sm th,
+.dashboard-compact .table-sm td {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.dashboard-compact .card-header {
+    padding: 0.75rem 1rem;
+}
+
+.dashboard-compact .welcome-section .card-body {
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-compact .btn-group {
+        flex-direction: column;
+    }
+    
+    .dashboard-compact .btn-group .btn {
+        margin-bottom: 0.25rem;
+    }
+}
+</style>
+
+<script>
+function showCashHistory() {
+    // Реализация показа истории кассы
+    alert('История кассы');
+}
+
+function refreshCash() {
+    // Реализация обновления кассы
+    location.reload();
+}
+
+function removeCash() {
+    // Реализация удаления денег из кассы
+    alert('Убрать деньги из кассы');
+}
+
+function addCash() {
+    // Реализация добавления денег в кассу
+    alert('Добавить деньги в кассу');
+}
+</script>
+{% endblock %}
+

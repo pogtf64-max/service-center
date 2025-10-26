@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}Панель управления{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% block content %}
+<div class="modern-dashboard compact-dashboard">
+    <!-- Service Center Information Header -->
+    {% if service %}
+    <div class="page-header-modern fade-in">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="flex-grow-1">
+                <h1 class="display-4 mb-3">
+                    <i class="bi bi-building"></i> {{ service.name }}
+                </h1>
+                <div class="row">
+                    {% if service.address %}
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <i class="bi bi-geo-alt"></i> {{ service.address }}
+                        </p>
+                    </div>
+                    {% endif %}
+                    {% if service.phone %}
+                    <div class="col-md-6">
+                        <p class="mb-2">
+                            <i class="bi bi-telephone"></i> {{ service.phone }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if service.email %}
+                <p class="mb-0">
+                    <i class="bi bi-envelope"></i> {{ service.email }}
+                </p>
+                {% endif %}
+            </div>
+            <div class="ms-3">
+                <i class="bi bi-building" style="font-size: 4rem;"></i>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="page-header-modern fade-in">
+        <h1 class="display-4 mb-3">
+            <i class="bi bi-speedometer2"></i> Добро пожаловать, {{ current_user.full_name }}!
+        </h1>
+        <p class="lead mb-0">Панель управления сервисным центром</p>
+    </div>
+    {% endif %}
+
+    <!-- Statistics Cards -->
+    <div class="row mb-2">
+        <div class="col-lg-3 col-md-6 mb-2">
+            <div class="stats-card-modern fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">Заказы в работе</h6>
+                        <h2 class="stats-number-modern">{{ orders_in_progress }}</h2>
+                    </div>
+                    <div class="ms-2">
+                        <i class="bi bi-lightning-charge text-primary" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-2">
+            <div class="stats-card-modern success fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">Готовые к выдаче</h6>
+                        <h2 class="stats-number-modern">{{ ready_orders }}</h2>
+                    </div>
+                    <div class="ms-2">
+                        <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-2">
+            <div class="stats-card-modern info fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">Всего клиентов</h6>
+                        <h2 class="stats-number-modern">{{ total_clients }}</h2>
+                    </div>
+                    <div class="ms-2">
+                        <i class="bi bi-people text-info" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-2">
+            <div class="stats-card-modern warning fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">Всего заказов</h6>
+                        <h2 class="stats-number-modern">{{ total_orders }}</h2>
+                    </div>
+                    <div class="ms-2">
+                        <i class="bi bi-clipboard-check text-warning" style="font-size: 1.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Register Card -->
+    <div class="modern-card slide-in-left">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="text-center">
+                    <h6 class="text-muted mb-1">Общая касса</h6>
+                    <h4 class="text-success mb-2">{{ "%.2f"|format(total_cash) }} ₽</h4>
+                    <div class="btn-group">
+                        <a href="{{ url_for('dashboard.cash_history') }}" class="btn btn-info-modern btn-modern btn-sm">
+                            <i class="bi bi-clock-history"></i> История
+                        </a>
+                        <button class="btn btn-outline-modern btn-sm" onclick="refreshCashData()">
+                            <i class="bi bi-arrow-clockwise"></i> Обновить
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-center">
+                    <h6 class="text-muted mb-1">За сегодня</h6>
+                    <h4 class="text-primary mb-2">{{ "%.2f"|format(today_cash) }} ₽</h4>
+                    <div class="btn-group">
+                        <button class="btn btn-warning-modern btn-modern btn-sm" onclick="showSubtractCashModal()">
+                            <i class="bi bi-dash-circle"></i> Убрать
+                        </button>
+                        <button class="btn btn-success-modern btn-modern btn-sm" onclick="showAddCashModal()">
+                            <i class="bi bi-plus-circle"></i> Добавить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Quick Actions -->
+    <div class="modern-card slide-in-right">
+        <h5 class="text-primary mb-2">
+            <i class="bi bi-lightning-charge"></i> Быстрые действия
+        </h5>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-2">
+                <a href="{{ url_for('orders.index') }}" class="action-card-modern">
+                    <i class="bi bi-plus-circle text-success"></i>
+                    <h6 class="mb-0">Новый заказ</h6>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-2">
+                <a href="{{ url_for('clients.index') }}" class="action-card-modern">
+                    <i class="bi bi-person-plus text-info"></i>
+                    <h6 class="mb-0">Добавить клиента</h6>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-2">
+                <a href="{{ url_for('parts.index') }}" class="action-card-modern">
+                    <i class="bi bi-box-seam text-warning"></i>
+                    <h6 class="mb-0">Управление запчастями</h6>
+                </a>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-2">
+                <a href="{{ url_for('orders.index') }}" class="action-card-modern">
+                    <i class="bi bi-list-ul text-primary"></i>
+                    <h6 class="mb-0">Все заказы</h6>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders - Ultra Compact -->
+    {% if recent_orders %}
+    <div class="modern-card slide-in-left">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="text-primary mb-0">
+                <i class="bi bi-clock-history"></i> Последние заказы
+            </h5>
+            <a href="{{ url_for('orders.index') }}" class="btn btn-sm btn-outline-primary">Все заказы</a>
+        </div>
+        <div class="row mt-2">
+            {% for order in recent_orders[:2] %}
+            <div class="col-md-6 mb-1">
+                <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                    <div>
+                        <strong>#{{ order.id }}</strong> {{ order.client.name }}
+                    </div>
+                    <span class="badge bg-primary">{{ order.status }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Cash Modal -->
+<div class="modal fade" id="addCashModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle text-success"></i> Добавить деньги в кассу
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCashForm">
+                    <div class="mb-3">
+                        <label for="addAmount" class="form-label">Сумма (₽)</label>
+                        <input type="number" class="form-control" id="addAmount" min="0" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addDescription" class="form-label">Описание</label>
+                        <input type="text" class="form-control" id="addDescription" placeholder="Например: Пополнение кассы" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-success" onclick="addCash()">Добавить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subtract Cash Modal -->
+<div class="modal fade" id="subtractCashModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-dash-circle text-warning"></i> Убрать деньги из кассы
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="subtractCashForm">
+                    <div class="mb-3">
+                        <label for="subtractAmount" class="form-label">Сумма (₽)</label>
+                        <input type="number" class="form-control" id="subtractAmount" min="0" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="subtractDescription" class="form-label">Описание</label>
+                        <input type="text" class="form-control" id="subtractDescription" placeholder="Например: Расходы на запчасти" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-warning" onclick="subtractCash()">Убрать</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Показать модальное окно добавления денег
+function showAddCashModal() {
+    const modal = new bootstrap.Modal(document.getElementById('addCashModal'));
+    modal.show();
+}
+
+// Показать модальное окно убавления денег
+function showSubtractCashModal() {
+    const modal = new bootstrap.Modal(document.getElementById('subtractCashModal'));
+    modal.show();
+}
+
+// Добавить деньги в кассу
+function addCash() {
+    const amount = document.getElementById('addAmount').value;
+    const description = document.getElementById('addDescription').value;
+    
+    if (!amount || amount <= 0) {
+        alert('Введите корректную сумму');
+        return;
+    }
+    
+    if (!description.trim()) {
+        alert('Введите описание');
+        return;
+    }
+    
+    fetch('/api/cash/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            amount: parseFloat(amount),
+            description: description.trim()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Деньги успешно добавлены в кассу');
+            // Закрыть модальное окно
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addCashModal'));
+            modal.hide();
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.message || 'Не удалось добавить деньги'));
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Ошибка при добавлении денег');
+    });
+}
+
+// Убрать деньги из кассы
+function subtractCash() {
+    const amount = document.getElementById('subtractAmount').value;
+    const description = document.getElementById('subtractDescription').value;
+    
+    if (!amount || amount <= 0) {
+        alert('Введите корректную сумму');
+        return;
+    }
+    
+    if (!description.trim()) {
+        alert('Введите описание');
+        return;
+    }
+    
+    fetch('/api/cash/subtract', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            amount: parseFloat(amount),
+            description: description.trim()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Деньги успешно убраны из кассы');
+            // Закрыть модальное окно
+            const modal = bootstrap.Modal.getInstance(document.getElementById('subtractCashModal'));
+            modal.hide();
+            location.reload();
+        } else {
+            alert('Ошибка: ' + (data.message || 'Не удалось убрать деньги'));
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Ошибка при убавлении денег');
+    });
+}
+
+// Обновить данные кассы
+function refreshCashData() {
+    location.reload();
+}
+</script>
+
+<style>
+.dashboard-compact .stats-card-compact {
+    min-height: 80px;
+}
+
+.dashboard-compact .card-body {
+    padding: 0.75rem;
+}
+
+.dashboard-compact .btn-group .btn {
+    font-size: 0.8rem;
+}
+
+.dashboard-compact .table-sm th,
+.dashboard-compact .table-sm td {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.dashboard-compact .card-header {
+    padding: 0.75rem 1rem;
+}
+
+.dashboard-compact .welcome-section .card-body {
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-compact .btn-group {
+        flex-direction: column;
+    }
+    
+    .dashboard-compact .btn-group .btn {
+        margin-bottom: 0.25rem;
+    }
+}
+</style>
+</div>
+{% endblock %}

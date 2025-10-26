@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Демо модальных окон{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="bi bi-window-stack"></i> Демонстрация кастомных модальных окон</h1>
+            <p class="lead">Все всплывающие окна в системе теперь красивые и в едином стиле!</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-3">
+        <!-- Confirm Modal Demo -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> Подтверждение</h5>
+                </div>
+                <div class="card-body">
+                    <p>Кастомное окно подтверждения с красивым дизайном.</p>
+                    <button class="btn btn-primary" onclick="testConfirm()">
+                        <i class="bi bi-question-circle"></i> Тест Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Modal Demo -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Уведомления</h5>
+                </div>
+                <div class="card-body">
+                    <p>Различные типы уведомлений с иконками.</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="testAlert('success')">
+                            <i class="bi bi-check-circle"></i> Успех
+                        </button>
+                        <button class="btn btn-warning" onclick="testAlert('warning')">
+                            <i class="bi bi-exclamation-triangle"></i> Предупреждение
+                        </button>
+                        <button class="btn btn-danger" onclick="testAlert('error')">
+                            <i class="bi bi-x-circle"></i> Ошибка
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompt Modal Demo -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Ввод данных</h5>
+                </div>
+                <div class="card-body">
+                    <p>Красивое окно для ввода данных пользователем.</p>
+                    <button class="btn btn-info" onclick="testPrompt()">
+                        <i class="bi bi-pencil-square"></i> Тест Prompt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-star"></i> Особенности кастомных модальных окон</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-palette"></i> Дизайн</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check text-success"></i> Темная тема в стиле системы</li>
+                                <li><i class="bi bi-check text-success"></i> Градиентные фоны</li>
+                                <li><i class="bi bi-check text-success"></i> Красивые иконки</li>
+                                <li><i class="bi bi-check text-success"></i> Анимации появления</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-gear"></i> Функциональность</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check text-success"></i> Поддержка клавиатуры (Enter/Escape)</li>
+                                <li><i class="bi bi-check text-success"></i> Адаптивный дизайн</li>
+                                <li><i class="bi bi-check text-success"></i> Различные типы уведомлений</li>
+                                <li><i class="bi bi-check text-success"></i> Автоматическая замена стандартных окон</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function testConfirm() {
+    const result = await customConfirm(
+        'Вы уверены, что хотите выполнить это действие?', 
+        'Подтверждение действия'
+    );
+    
+    if (result) {
+        customAlert('Действие подтверждено!', 'Успех', 'success');
+    } else {
+        customAlert('Действие отменено', 'Информация', 'info');
+    }
+}
+
+function testAlert(type) {
+    const messages = {
+        success: 'Операция выполнена успешно!',
+        warning: 'Внимание! Это действие может быть необратимым.',
+        error: 'Произошла ошибка при выполнении операции.'
+    };
+    
+    const titles = {
+        success: 'Успех',
+        warning: 'Предупреждение', 
+        error: 'Ошибка'
+    };
+    
+    customAlert(messages[type], titles[type], type);
+}
+
+async function testPrompt() {
+    const result = await customPrompt(
+        'Пожалуйста, введите ваше имя:',
+        'Иван Иванов',
+        'Ввод данных'
+    );
+    
+    if (result) {
+        customAlert(`Привет, ${result}!`, 'Приветствие', 'success');
+    } else {
+        customAlert('Ввод отменен', 'Информация', 'info');
+    }
+}
+</script>
+{% endblock %}
+
+

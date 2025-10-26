@@ -1,0 +1,1189 @@
+/* Custom CSS for Service Center */
+
+:root {
+    --primary-color: #6366f1;
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #06b6d4;
+    --light-color: #f8fafc;
+    --dark-color: #0f172a;
+}
+
+/* Custom modal sizes */
+.modal-dialog.modal-xxl {
+    max-width: 95vw;
+    width: 95vw;
+}
+
+@media (min-width: 1200px) {
+    .modal-dialog.modal-xxl {
+        max-width: 1400px;
+        width: 1400px;
+    }
+}
+
+/* Cash management buttons in cards */
+.cash-card .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.cash-card .btn-sm i {
+    font-size: 0.8rem;
+    margin-right: 0.25rem;
+}
+
+/* Compact Dashboard Styles */
+.dashboard-compact .card {
+    margin-bottom: 0.75rem !important;
+}
+
+.dashboard-compact .card-body {
+    padding: 0.75rem !important;
+}
+
+.dashboard-compact .card-header {
+    padding: 0.5rem 0.75rem !important;
+}
+
+.dashboard-compact .card-title {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.dashboard-compact .card-text {
+    font-size: 0.9rem !important;
+    margin-bottom: 0 !important;
+}
+
+.dashboard-compact .stats-card {
+    padding: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.dashboard-compact .stats-card .card-body {
+    padding: 0.5rem !important;
+}
+
+.dashboard-compact .stats-card .text-xs {
+    font-size: 0.7rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.dashboard-compact .stats-card .h5 {
+    font-size: 1.25rem !important;
+    margin-bottom: 0 !important;
+}
+
+.dashboard-compact .stats-card i {
+    font-size: 1.5rem !important;
+}
+
+.dashboard-compact .quick-actions .btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.dashboard-compact .table th,
+.dashboard-compact .table td {
+    padding: 0.5rem !important;
+    font-size: 0.85rem !important;
+}
+
+.dashboard-compact .table th {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+}
+
+.dashboard-compact .welcome-section {
+    margin-bottom: 1rem !important;
+}
+
+.dashboard-compact .welcome-section .card-body {
+    padding: 1rem !important;
+}
+
+.dashboard-compact .welcome-section .card-title {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.dashboard-compact .welcome-section .card-text {
+    font-size: 1rem !important;
+    margin-bottom: 0 !important;
+}
+
+/* Compact styles for Archive page */
+.archive-stats-card {
+    padding: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.archive-stats-card .card-body {
+    padding: 0.75rem !important;
+}
+
+.archive-stats-card .card-title {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.archive-stats-card h3 {
+    font-size: 1.5rem !important;
+    margin-bottom: 0 !important;
+}
+
+.archive-stats-card i {
+    font-size: 1.5rem !important;
+}
+
+.archive-order-card {
+    margin-bottom: 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.archive-order-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.archive-order-card .card-header {
+    padding: 0.5rem 0.75rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.archive-order-card .card-body {
+    padding: 0.75rem;
+}
+
+.archive-order-card .row {
+    margin-bottom: 0.25rem;
+}
+
+.archive-order-card .col-6 {
+    padding: 0.125rem 0.5rem;
+}
+
+.archive-order-card .small {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.archive-order-card .badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.archive-order-card .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Compact grid for archive orders */
+.archive-orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .archive-orders-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Body and Layout */
+body {
+    background-color: #f8fafc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    transform: translateY(-1px);
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Statistics Cards */
+.border-left-primary {
+    border-left: 4px solid var(--primary-color) !important;
+}
+
+.border-left-success {
+    border-left: 4px solid var(--success-color) !important;
+}
+
+.border-left-info {
+    border-left: 4px solid var(--info-color) !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid var(--warning-color) !important;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+}
+
+/* Tables */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* Badges */
+.badge {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+/* Forms */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+}
+
+/* Modals */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 1.5rem;
+}
+
+/* Alerts */
+.alert {
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Login Page */
+.login-page {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Dashboard */
+.dashboard-stats {
+    margin-bottom: 2rem;
+}
+
+.quick-actions {
+    margin-bottom: 2rem;
+}
+
+.quick-actions .btn {
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.quick-actions .btn i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Loading Spinner */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .quick-actions .btn {
+        height: 60px;
+        font-size: 0.9rem;
+    }
+    
+    .quick-actions .btn i {
+        font-size: 1.2rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a202c;
+        color: #e2e8f0;
+    }
+    
+    .card {
+        background-color: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .table {
+        color: #e2e8f0;
+    }
+    
+    .table thead th {
+        background-color: #4a5568;
+        color: #e2e8f0;
+    }
+}
+
+/* Кастомные цвета для статусов заказов */
+.bg-orange {
+    background-color: #f97316 !important;
+    color: white !important;
+}
+
+.bg-purple {
+    background-color: #9333ea !important;
+    color: white !important;
+}
+
+.bg-teal {
+    background-color: #14b8a6 !important;
+    color: white !important;
+}
+
+.bg-red {
+    background-color: #dc2626 !important;
+    color: white !important;
+}
+
+/* Красивые модальные окна */
+.modal {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-dialog {
+    margin: 1.75rem auto;
+    max-width: 500px;
+    transition: all 0.3s ease;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    padding: 1.5rem 2rem;
+    position: relative;
+}
+
+.modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+}
+
+.modal-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-title i {
+    font-size: 1.5rem;
+    opacity: 0.9;
+}
+
+.modal-header .btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.modal-header .btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.modal-header .btn-close::before {
+    content: '×';
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.modal-body {
+    padding: 2rem;
+    background: white;
+}
+
+.modal-footer {
+    background: #f8f9fa;
+    border: none;
+    padding: 1.5rem 2rem;
+    gap: 1rem;
+}
+
+/* Стили для форм в модальных окнах */
+.modal-body .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.modal-body .form-control,
+.modal-body .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background: #fafbfc;
+}
+
+.modal-body .form-control:focus,
+.modal-body .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+    background: white;
+}
+
+.modal-body textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Стили для кнопок в модальных окнах */
+.modal-footer .btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    border: none;
+    min-width: 100px;
+}
+
+.modal-footer .btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.modal-footer .btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.modal-footer .btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.modal-footer .btn-secondary:hover {
+    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+/* Анимации для модальных окон */
+.modal.fade .modal-dialog {
+    transform: translate(0, -50px);
+    transition: transform 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+    transform: translate(0, 0);
+}
+
+/* Специальные стили для модальных окон с историей */
+.modal-lg .modal-content {
+    max-width: 800px;
+}
+
+.modal-lg .modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Стили для карточек в модальных окнах */
+.modal-body .card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+.modal-body .card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.modal-body .card-body {
+    padding: 1rem;
+}
+
+/* Стили для статусов в модальных окнах */
+.modal-body .badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+    }
+}
+
+/* Стили для модального окна в формате А4 */
+.modal-a4 {
+    max-width: 210mm; /* Ширина А4 */
+    width: 100%;
+    margin: 1rem auto;
+}
+
+.a4-preview {
+    padding: 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.a4-document {
+    width: 210mm; /* Ширина А4 */
+    min-height: 297mm; /* Высота А4 */
+    background: white;
+    margin: 0 auto;
+    padding: 20mm; /* Отступы как в документе */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    font-family: 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 1.4;
+    color: #000;
+    overflow: visible;
+    position: relative;
+}
+
+/* Стили для формы в формате А4 */
+.a4-form-body {
+    padding: 8mm; /* Уменьшенные отступы */
+    background: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 9pt; /* Уменьшенный размер шрифта */
+    line-height: 1.2; /* Более компактная высота строк */
+    color: #333;
+    max-height: 85vh; /* Увеличена доступная высота */
+    overflow-y: auto;
+}
+
+.a4-form {
+    background: white;
+    padding: 0;
+}
+
+.a4-form .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem; /* Уменьшенный отступ */
+    font-size: 8pt; /* Уменьшенный размер лейблов */
+}
+
+.a4-form .form-control,
+.a4-form .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 3px; /* Меньше скругления */
+    padding: 0.3rem 0.5rem; /* Уменьшенные отступы */
+    font-size: 8pt; /* Уменьшенный размер шрифта */
+    line-height: 1.2; /* Более компактная высота строк */
+    background: #fff;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    height: auto; /* Автоматическая высота */
+}
+
+.a4-form .form-control:focus,
+.a4-form .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+    background: #fff;
+}
+
+.a4-form .mb-3 {
+    margin-bottom: 0.4rem; /* Уменьшенный отступ между полями */
+}
+
+.a4-form .row {
+    margin-left: -0.25rem;
+    margin-right: -0.25rem;
+}
+
+.a4-form .col-md-6 {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.a4-form textarea.form-control {
+    resize: vertical;
+    min-height: 40px; /* Уменьшенная минимальная высота */
+    max-height: 80px; /* Ограничение максимальной высоты */
+}
+
+/* Компактные стили для модального окна */
+.modal-a4 .modal-body {
+    padding: 0.5rem; /* Минимальные отступы */
+}
+
+.modal-a4 .modal-header {
+    padding: 0.75rem 1rem; /* Уменьшенные отступы заголовка */
+}
+
+.modal-a4 .modal-footer {
+    padding: 0.5rem 1rem; /* Уменьшенные отступы футера */
+}
+
+.modal-a4 .modal-title {
+    font-size: 1rem; /* Уменьшенный размер заголовка */
+}
+
+/* Адаптивность для экранов меньше А4 */
+@media (max-width: 230mm) {
+    .modal-a4 {
+        max-width: 95vw;
+        margin: 0.5rem auto;
+    }
+    
+    .a4-form-body {
+        padding: 5mm; /* Еще более компактные отступы */
+        font-size: 8pt; /* Уменьшенный размер шрифта */
+    }
+    
+    .a4-form .form-control,
+    .a4-form .form-select {
+        font-size: 7pt; /* Очень компактный размер */
+        padding: 0.25rem 0.4rem; /* Минимальные отступы */
+    }
+    
+    .a4-form .form-label {
+        font-size: 7pt; /* Компактные лейблы */
+        margin-bottom: 0.2rem;
+    }
+    
+    .a4-form .mb-3 {
+        margin-bottom: 0.3rem; /* Минимальные отступы между полями */
+    }
+    
+    .a4-form textarea.form-control {
+        min-height: 35px; /* Очень компактные текстовые области */
+        max-height: 60px;
+    }
+}
+
+/* Дополнительные компактные стили для очень маленьких экранов */
+@media (max-width: 768px) {
+    .modal-a4 {
+        max-width: 98vw;
+        margin: 0.25rem auto;
+    }
+    
+    .a4-form-body {
+        padding: 3mm;
+        font-size: 7pt;
+        max-height: 90vh;
+    }
+    
+    .a4-form .form-control,
+    .a4-form .form-select {
+        font-size: 6pt;
+        padding: 0.2rem 0.3rem;
+    }
+    
+    .a4-form .form-label {
+        font-size: 6pt;
+        margin-bottom: 0.15rem;
+    }
+    
+    .a4-form .mb-3 {
+        margin-bottom: 0.25rem;
+    }
+    
+    .a4-form textarea.form-control {
+        min-height: 30px;
+        max-height: 50px;
+    }
+}
+
+/* Специальные стили для модального окна "Запчасти со склада" в формате A4 */
+.modal-a4 .modal-dialog {
+    max-width: 210mm; /* Ширина A4 */
+    width: 100%;
+    margin: 1rem auto;
+}
+
+.modal-a4 .modal-content {
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-a4 .modal-body {
+    padding: 1rem;
+    max-height: calc(90vh - 120px); /* Учитываем заголовок и футер */
+    overflow-y: auto;
+}
+
+/* Стили для списка запчастей в модальном окне A4 */
+#stockPartsList {
+    max-height: 60vh !important; /* Увеличиваем высоту списка */
+    overflow-y: auto;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+/* Компактные карточки запчастей */
+.stock-part-card {
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    background: white;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.stock-part-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.stock-part-card.selected {
+    border-color: #007bff;
+    background: #f8f9ff;
+}
+
+.stock-part-card .part-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.stock-part-card .part-name {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.25rem;
+}
+
+.stock-part-card .part-details {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.stock-part-card .part-price {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 0.9rem;
+}
+
+.stock-part-card .part-stock {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.stock-part-card .add-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.stock-part-card .add-btn:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+.stock-part-card .add-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Стили для селектора количества в карточках запчастей */
+.stock-part-card .quantity-selector {
+    display: flex;
+    align-items: center;
+}
+
+.stock-part-card .part-quantity {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    text-align: center;
+    background: white;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.stock-part-card .part-quantity:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.stock-part-card .part-quantity:hover {
+    border-color: #007bff;
+}
+
+/* Адаптивность для модального окна A4 */
+@media (max-width: 230mm) {
+    .modal-a4 .modal-dialog {
+        max-width: 95vw;
+        margin: 0.5rem auto;
+    }
+    
+    .modal-a4 .modal-body {
+        padding: 0.75rem;
+        max-height: calc(90vh - 100px);
+    }
+    
+    #stockPartsList {
+        max-height: 55vh !important;
+    }
+    
+    .stock-part-card {
+        padding: 0.5rem;
+    }
+    
+    .stock-part-card .part-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-a4 .modal-dialog {
+        max-width: 98vw;
+        margin: 0.25rem auto;
+    }
+    
+    .modal-a4 .modal-body {
+        padding: 0.5rem;
+        max-height: calc(95vh - 80px);
+    }
+    
+    #stockPartsList {
+        max-height: 70vh !important;
+    }
+    
+    .stock-part-card {
+        padding: 0.4rem;
+    }
+    
+    .stock-part-card .part-name {
+        font-size: 0.9rem;
+    }
+    
+    .stock-part-card .part-details {
+        font-size: 0.8rem;
+    }
+}
+
+/* Стили для печати А4 */
+@media print {
+    .a4-document {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 20mm;
+        box-shadow: none;
+        border-radius: 0;
+        page-break-after: always;
+    }
+}
+
+/* Адаптивность для экранов меньше А4 */
+@media (max-width: 230mm) {
+    .modal-a4 {
+        max-width: 95vw;
+        margin: 0.5rem auto;
+    }
+    
+    .a4-document {
+        width: 100%;
+        min-height: auto;
+        padding: 15mm;
+        font-size: 11pt;
+    }
+}
+
+/* Стили для содержимого документа А4 */
+.a4-document h1 {
+    font-size: 18pt;
+    font-weight: bold;
+    text-align: center;
+    margin: 0 0 20pt 0;
+    text-transform: uppercase;
+}
+
+.a4-document h2 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin: 15pt 0 10pt 0;
+}
+
+.a4-document h3 {
+    font-size: 12pt;
+    font-weight: bold;
+    margin: 10pt 0 5pt 0;
+}
+
+.a4-document p {
+    margin: 5pt 0;
+    text-align: justify;
+}
+
+.a4-document table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10pt 0;
+}
+
+.a4-document table td,
+.a4-document table th {
+    border: 1px solid #000;
+    padding: 5pt;
+    vertical-align: top;
+}
+
+.a4-document .document-header {
+    text-align: center;
+    margin-bottom: 20pt;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10pt;
+}
+
+.a4-document .document-section {
+    margin: 15pt 0;
+    page-break-inside: avoid;
+}
+
+.a4-document .signature-section {
+    margin-top: 30pt;
+    display: flex;
+    justify-content: space-between;
+}
+
+.a4-document .signature-block {
+    width: 45%;
+    text-align: center;
+}
+
+.a4-document .signature-line {
+    border-bottom: 1px solid #000;
+    height: 20pt;
+    margin: 10pt 0 5pt 0;
+}
+
+/* Цветовое кодирование опций в выпадающем списке статусов */
+#newStatus option[value="diagnosis"] {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+#newStatus option[value="in_work"] {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+#newStatus option[value="requires_approval"] {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+#newStatus option[value="approved"] {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+#newStatus option[value="ready"] {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+#newStatus option[value="parts_order"] {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+#newStatus option[value="parts_ordered"] {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+#newStatus option[value="parts_issued"] {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+#newStatus option[value="completed"] {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+#newStatus option[value="rejected"] {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+

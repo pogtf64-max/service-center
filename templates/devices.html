@@ -1,0 +1,3367 @@
+{% extends "base.html" %}
+<!-- ВЕРСИЯ 14.0 - ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ КЭША - ТЕСТ КЭША -->
+
+{% block title %}Устройства{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-modern fade-in">
+    <h1 class="display-4 mb-3">
+        <i class="bi bi-laptop"></i> Устройства
+    </h1>
+    <p class="lead mb-0">Управление устройствами клиентов</p>
+</div>
+
+<!-- Search and Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="search-modern" style="width: 300px;">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" class="form-control modern-form-control" id="searchInput" placeholder="Поиск устройств...">
+            </div>
+            <button class="btn btn-primary-modern btn-modern" onclick="loadDevices()">
+                <i class="bi bi-arrow-clockwise"></i> Обновить
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Статистические карточки -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+        <div class="stats-card-modern info fade-in">
+            <i class="bi bi-laptop text-info" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <h5 class="card-title">Всего устройств</h5>
+            <h3 class="stats-number-modern" id="totalDevices">{{ total_devices }}</h3>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+        <div class="stats-card-modern warning fade-in">
+            <i class="bi bi-tools text-warning" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <h5 class="card-title mt-2">В ремонте</h5>
+            <h3 class="text-warning" id="devicesInRepair">{{ devices_in_repair }}</h3>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+        <div class="stats-card-modern success fade-in">
+            <i class="bi bi-check-circle text-success" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <h5 class="card-title mt-2">Готовы</h5>
+            <h3 class="text-success" id="devicesReady">{{ devices_ready }}</h3>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+        <div class="stats-card-modern secondary fade-in">
+            <i class="bi bi-hourglass-split text-secondary" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <h5 class="card-title mt-2">На согласовании</h5>
+            <h3 class="text-secondary" id="pendingApproval">0</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Список устройств -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-list"></i> Список устройств</h5>
+    </div>
+    <div class="card-body">
+        <div id="devicesList" class="row">
+            <div class="col-12 text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2">Загрузка устройств...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для просмотра устройства -->
+<div class="modal fade" id="deviceDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xxl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-laptop"></i> Детали устройства <span id="deviceDetailId"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="deviceDetailContent">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-2">Загрузка данных...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для редактирования устройства -->
+<div class="modal fade" id="editDeviceModal" tabindex="-1">
+    <div class="modal-dialog modal-xxl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil"></i> Редактировать устройство
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editDeviceForm">
+                    <input type="hidden" id="editDeviceId" name="device_id">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editDeviceType" class="form-label">Тип устройства</label>
+                                <input type="text" class="form-control" id="editDeviceType" name="device_type">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDeviceBrand" class="form-label">Бренд</label>
+                                <input type="text" class="form-control" id="editDeviceBrand" name="brand">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDeviceModel" class="form-label">Модель</label>
+                                <input type="text" class="form-control" id="editDeviceModel" name="model">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editDeviceSerial" class="form-label">Серийный номер</label>
+                                <input type="text" class="form-control" id="editDeviceSerial" name="serial_number">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDeviceImei" class="form-label">IMEI</label>
+                                <input type="text" class="form-control" id="editDeviceImei" name="imei">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDeviceCondition" class="form-label">Состояние</label>
+                                <input type="text" class="form-control" id="editDeviceCondition" name="condition">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDeviceDescription" class="form-label">Описание внешнего вида</label>
+                        <textarea class="form-control" id="editDeviceDescription" name="external_description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDeviceCompleteness" class="form-label">Комплектность</label>
+                        <textarea class="form-control" id="editDeviceCompleteness" name="completeness" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="saveDeviceEdit()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для изменения статуса -->
+<div class="modal fade" id="changeStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-arrow-repeat"></i> Изменить статус устройства <span id="statusDeviceId"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="newStatus" class="form-label">Новый статус</label>
+                    <select class="form-select" id="newStatus">
+                        <option value="received">Принят</option>
+                        <option value="diagnosis">Диагностика</option>
+                        <option value="in_work">В работе</option>
+                        <option value="requires_approval">Требуется согласование</option>
+                        <option value="approved">Согласовано</option>
+                        <option value="ready">Готов к выдаче</option>
+                        <option value="parts_order">Заказ ЗИП</option>
+                        <option value="parts_ordered">ЗИП заказан</option>
+                        <option value="parts_issued">ЗИП выдан</option>
+                        <option value="completed">Выдано</option>
+                        <option value="rejected">Отказ от ремонта</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="statusComment" class="form-label">Комментарий (необязательно)</label>
+                    <textarea class="form-control" id="statusComment" rows="3" placeholder="Дополнительная информация о изменении статуса"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="saveStatusChange()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для просмотра истории -->
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-xxl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-clock-history"></i> История изменений статусов
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="historyContent">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="mt-2">Загрузка истории...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для заказа ЗИП -->
+<div class="modal fade" id="orderPartsModal" tabindex="-1">
+    <div class="modal-dialog modal-a4">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-box-seam"></i> Заказ ЗИП и услуг
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body a4-form-body">
+                <form id="orderPartsForm" class="a4-form">
+                    <input type="hidden" id="orderPartsDeviceId">
+                    
+                    <!-- Информация об устройстве -->
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <h6 class="mb-1"><i class="bi bi-laptop"></i> Информация об устройстве</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Устройство</label>
+                            <input type="text" class="form-control" id="orderPartsDeviceInfo" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Клиент</label>
+                            <input type="text" class="form-control" id="orderPartsClientInfo" readonly>
+                        </div>
+                    </div>
+                    
+                    <!-- Запчасти -->
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <h6 class="mb-1"><i class="bi bi-box-seam"></i> Запчасти</h6>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="partSearch" class="form-label">Поиск запчастей</label>
+                            <input type="text" class="form-control" id="partSearch" placeholder="Введите название или артикул запчасти">
+                            <div id="partSuggestions" class="list-group mt-1" style="display: none; max-height: 120px; overflow-y: auto;"></div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="partQuantity" class="form-label">Количество</label>
+                            <input type="number" class="form-control" id="partQuantity" value="1" min="1">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="partPrice" class="form-label">Цена (₽)</label>
+                            <input type="number" class="form-control" id="partPrice" placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end gap-1">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addCustomPart()">
+                                <i class="bi bi-plus"></i> Добавить
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="openStockPartsModal()">
+                                <i class="bi bi-warehouse"></i> Со склада
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Список выбранных запчастей -->
+                    <div class="mb-2">
+                        <h6 class="mb-1">Выбранные запчасти</h6>
+                        <div id="selectedParts" class="border rounded p-2" style="min-height: 60px; max-height: 120px; overflow-y: auto;">
+                            <p class="text-muted mb-0">Запчасти не выбраны</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Услуги -->
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <h6 class="mb-1"><i class="bi bi-tools"></i> Услуги</h6>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="serviceName" class="form-label">Название услуги</label>
+                            <input type="text" class="form-control" id="serviceName" placeholder="Введите название услуги">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="servicePrice" class="form-label">Стоимость (₽)</label>
+                            <input type="number" class="form-control" id="servicePrice" placeholder="0.00" step="0.01">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addService()">
+                                <i class="bi bi-plus"></i> Добавить услугу
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Список выбранных услуг -->
+                    <div class="mb-2">
+                        <h6 class="mb-1">Выбранные услуги</h6>
+                        <div id="selectedServices" class="border rounded p-2" style="min-height: 60px; max-height: 120px; overflow-y: auto;">
+                            <p class="text-muted mb-0">Услуги не выбраны</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Общая стоимость и примечания -->
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <label for="totalCost" class="form-label">Общая стоимость (₽)</label>
+                            <input type="number" class="form-control" id="totalCost" placeholder="0.00" step="0.01" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="orderNotes" class="form-label">Примечания</label>
+                            <input type="text" class="form-control" id="orderNotes" placeholder="Дополнительная информация">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="submitPartsOrder()">
+                    <i class="bi bi-check-circle"></i> Создать заказ ЗИП
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для выбора запчастей со склада -->
+<div class="modal fade" id="stockPartsModal" tabindex="-1">
+    <div class="modal-dialog modal-a4">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-warehouse"></i> Запчасти со склада
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body a4-form-body">
+                <!-- Поиск по складу -->
+                <div class="row mb-2">
+                    <div class="col-md-12">
+                        <label for="stockSearch" class="form-label">Поиск по складу</label>
+                        <input type="text" class="form-control" id="stockSearch" placeholder="Введите название, артикул или категорию">
+                    </div>
+                </div>
+                
+                <!-- Список запчастей со склада -->
+                <div class="mb-2">
+                    <h6>Доступные запчасти</h6>
+                    <div id="stockPartsList" class="border rounded p-2" style="max-height: 70vh; overflow-y: auto;">
+                        <div class="text-center text-muted">
+                            <i class="bi bi-hourglass-split"></i> Загрузка запчастей...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="addSelectedStockParts()">
+                    <i class="bi bi-plus-circle"></i> Добавить выбранные
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для уведомлений -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" id="notificationHeader">
+                <h5 class="modal-title" id="notificationModalLabel">
+                    <i class="bi bi-info-circle" id="notificationIcon"></i>
+                    <span id="notificationTitle">Уведомление</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p id="notificationMessage">Сообщение</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let devicesData = [];
+
+// Загрузка устройств при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    loadDevices();
+    
+    // Инициализируем отображение АВР для всех устройств
+    setTimeout(() => {
+        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+        Object.keys(workReports).forEach(deviceId => {
+            updateDeviceWorkReports(deviceId);
+        });
+    }, 1000);
+});
+
+// Загрузка списка устройств
+async function loadDevices() {
+    try {
+        const response = await fetch('/api/devices');
+        devicesData = await response.json();
+        renderDevices(devicesData);
+        updateStatistics();
+    } catch (error) {
+        console.error('Ошибка загрузки устройств:', error);
+        document.getElementById('devicesList').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i> Ошибка загрузки устройств
+            </div>
+        `;
+    }
+}
+
+// Отображение устройств
+function renderDevices(devices) {
+    const container = document.getElementById('devicesList');
+    
+    if (devices.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-4">
+                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-2">Нет устройств</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const devicesHTML = devices.map(device => `
+        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="bi bi-laptop"></i> ${device.brand} ${device.model}
+                    </h6>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-light" onclick="viewHistory(${device.id})" title="История">
+                            <i class="bi bi-clock-history"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-light" onclick="viewDevice(${device.id})" title="Просмотр">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-light" onclick="editDevice(${device.id})" title="Редактировать">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-light" onclick="orderParts(${device.id})" title="Заказ ЗИП">
+                            <i class="bi bi-box-seam"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-light" onclick="createWorkReport(${device.id})" title="Акт выполненных работ">
+                            <i class="bi bi-file-earmark-check"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <strong>Клиент:</strong>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="text-primary">${device.client_name}</a>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <strong>Тип:</strong>
+                        </div>
+                        <div class="col-6">
+                            ${device.device_type || 'Не указан'}
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <strong>Серийный номер:</strong>
+                        </div>
+                        <div class="col-6">
+                            ${device.serial_number || 'Не указан'}
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <strong>Дата приема:</strong>
+                        </div>
+                        <div class="col-6">
+                            ${device.created_at ? new Date(device.created_at).toLocaleDateString() : 'Не указана'}
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <strong>Статус:</strong>
+                        </div>
+                        <div class="col-6">
+                            <span class="badge bg-${getStatusColor(device.latest_order_status)} clickable-status" 
+                                  onclick="changeDeviceStatus(${device.id}, '${device.latest_order_status}')" 
+                                  style="cursor: pointer;" 
+                                  title="Нажмите для изменения статуса">
+                                ${device.latest_order_status}
+                            </span>
+                        </div>
+                    </div>
+                    ${device.problem_description ? `
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <strong>Заявленная неисправность клиентом:</strong>
+                            <div class="mt-1 p-2 bg-light rounded" style="font-size: 0.9em; line-height: 1.4;">
+                                ${device.problem_description}
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">Создано: ${device.created_at ? new Date(device.created_at).toLocaleString() : 'Не указано'}</small>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = devicesHTML;
+}
+
+// Получение цвета для статуса
+function getStatusColor(status) {
+    const statusColors = {
+        'Диагностика': 'warning',
+        'В работе': 'primary',
+        'Требуется согласование': 'danger',
+        'Согласовано': 'info',
+        'Готов к выдаче': 'success',
+        'Заказ ЗИП': 'orange',
+        'ЗИП заказан': 'purple',
+        'ЗИП выдан': 'dark',
+        'Выдано': 'secondary',
+        'Отказ от ремонта': 'red',
+        'Нет заказов': 'light'
+    };
+    return statusColors[status] || 'secondary';
+}
+
+// Просмотр истории
+async function viewHistory(deviceId) {
+    const modal = new bootstrap.Modal(document.getElementById('historyModal'));
+    modal.show();
+    
+    try {
+        const response = await fetch(`/api/devices/${deviceId}/status-history`);
+        const history = await response.json();
+        
+        // Получаем сохраненные АВР
+        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+        const deviceReports = workReports[deviceId] || [];
+        
+        // Объединяем историю статусов и АВР
+        const allEntries = [];
+        
+        // Добавляем записи истории статусов
+        history.forEach(entry => {
+            allEntries.push({
+                type: 'status',
+                data: entry,
+                timestamp: new Date(entry.created_at)
+            });
+        });
+        
+        // Добавляем АВР
+        deviceReports.forEach(report => {
+            // Убеждаемся, что у АВР есть необходимые поля
+            if (!report.parts) report.parts = [];
+            if (!report.services) report.services = [];
+            
+            allEntries.push({
+                type: 'work_report',
+                data: report,
+                timestamp: new Date(report.created_at)
+            });
+        });
+        
+        // Сортируем по времени (новые сверху)
+        allEntries.sort((a, b) => b.timestamp - a.timestamp);
+        
+        if (allEntries.length === 0) {
+            document.getElementById('historyContent').innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-info-circle text-muted"></i>
+                    <p class="text-muted mt-2">История изменений отсутствует</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const historyHTML = allEntries.map(entry => {
+            if (entry.type === 'status') {
+                const statusData = entry.data;
+                return `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>${statusData.user_name}</strong>
+                                    <span class="badge bg-${getStatusColor(statusData.new_status_display)} ms-2">
+                                        ${statusData.new_status_display}
+                                    </span>
+                                </div>
+                                <small class="text-muted">${entry.timestamp.toLocaleString('ru-RU')}</small>
+                            </div>
+                            ${statusData.comment ? `<p class="mt-2 mb-0"><small>${statusData.comment}</small></p>` : ''}
+                        </div>
+                    </div>
+                `;
+            } else if (entry.type === 'work_report') {
+                const reportData = entry.data;
+                return `
+                    <div class="card mb-2 border-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong><i class="bi bi-file-text text-success"></i> Акт выполненных работ</strong>
+                                    <span class="badge bg-success ms-2">АВР #${reportData.id}</span>
+                                </div>
+                                <small class="text-muted">${entry.timestamp.toLocaleString('ru-RU')}</small>
+                            </div>
+                            <div class="mt-2">
+                                <p class="mb-1"><strong>Стоимость:</strong> ${reportData.total_cost} ₽</p>
+                                <p class="mb-1"><strong>Описание:</strong> ${reportData.work_description ? reportData.work_description.substring(0, 100) + (reportData.work_description.length > 100 ? '...' : '') : 'Без описания'}</p>
+                                ${reportData.parts && reportData.parts.length > 0 ? `<p class="mb-1"><strong>Запчасти:</strong> ${reportData.parts.length} шт.</p>` : ''}
+                                ${reportData.services && reportData.services.length > 0 ? `<p class="mb-1"><strong>Услуги:</strong> ${reportData.services.length} шт.</p>` : ''}
+                            </div>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="viewWorkReport(${reportData.id})" title="Просмотр">
+                                    <i class="bi bi-eye"></i> Просмотр
+                                </button>
+                                <button class="btn btn-sm btn-outline-success me-1" onclick="printSavedWorkReport('${reportData.id}')" title="Печать">
+                                    <i class="bi bi-printer"></i> Печать
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteWorkReport('${reportData.id}', ${deviceId})" title="Удалить">
+                                    <i class="bi bi-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }).join('');
+        
+        document.getElementById('historyContent').innerHTML = historyHTML;
+    } catch (error) {
+        console.error('Ошибка загрузки истории:', error);
+        document.getElementById('historyContent').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i> Ошибка загрузки истории
+            </div>
+        `;
+    }
+}
+
+// Обновление статистики
+function updateStatistics() {
+    const total = devicesData.length;
+    const inRepair = devicesData.filter(d => d.latest_order_status === 'В работе' || d.latest_order_status === 'Диагностика').length;
+    const ready = 0; // Устройства со статусом "Готов к выдаче" не отображаются в списке
+    const pending = 0; // Устройства со статусом "Требуется согласование" не отображаются в списке
+    
+    document.getElementById('totalDevices').textContent = total;
+    document.getElementById('devicesInRepair').textContent = inRepair;
+    document.getElementById('devicesReady').textContent = ready;
+    document.getElementById('pendingApproval').textContent = pending;
+}
+
+// Функции для кнопок действий
+function viewDevice(deviceId) {
+    // Загружаем данные устройства
+    fetch(`/api/devices/${deviceId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showNotification('Ошибка', 'Ошибка загрузки устройства: ' + data.error, 'error');
+                return;
+            }
+            
+            // Заполняем модальное окно данными устройства
+            document.getElementById('deviceDetailId').textContent = data.id;
+            document.getElementById('deviceDetailContent').innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-person"></i> Информация о клиенте</h6>
+                        <p><strong>Имя:</strong> ${data.client.name}</p>
+                        <p><strong>Телефон:</strong> ${data.client.phone || 'Не указан'}</p>
+                        <p><strong>Email:</strong> ${data.client.email || 'Не указан'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-laptop"></i> Информация об устройстве</h6>
+                        <p><strong>Тип:</strong> ${data.device_type || 'Не указан'}</p>
+                        <p><strong>Бренд:</strong> ${data.brand}</p>
+                        <p><strong>Модель:</strong> ${data.model}</p>
+                        <p><strong>Серийный номер:</strong> ${data.serial_number || 'Не указан'}</p>
+                        <p><strong>IMEI:</strong> ${data.imei || 'Не указан'}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-info-circle"></i> Дополнительная информация</h6>
+                        <p><strong>Состояние:</strong> ${data.condition || 'Не указано'}</p>
+                        <p><strong>Дата создания:</strong> ${data.created_at ? new Date(data.created_at).toLocaleDateString('ru-RU') : 'Не указана'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-clock-history"></i> Статус</h6>
+                        <p><strong>Текущий статус:</strong> <span class="badge bg-${getStatusColor(data.latest_order_status || 'Нет заказов')}">${data.latest_order_status || 'Нет заказов'}</span></p>
+                    </div>
+                </div>
+                ${data.problem_description ? `
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <h6><i class="bi bi-exclamation-triangle"></i> Заявленная неисправность клиентом</h6>
+                        <div class="alert alert-info" style="font-size: 0.9em; line-height: 1.4;">
+                            ${data.problem_description}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                ${data.external_description ? `<hr><h6><i class="bi bi-eye"></i> Описание внешнего вида</h6><p>${data.external_description}</p>` : ''}
+                ${data.completeness ? `<hr><h6><i class="bi bi-box"></i> Комплектность</h6><p>${data.completeness}</p>` : ''}
+                <hr>
+                <h6><i class="bi bi-clock-history"></i> История изменений статусов</h6>
+                <div id="deviceStatusHistory">
+                    <div class="text-center">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p class="text-muted mt-2">Загрузка истории...</p>
+                    </div>
+                </div>
+            `;
+            
+            // Показываем модальное окно
+            new bootstrap.Modal(document.getElementById('deviceDetailModal')).show();
+            
+            // Загружаем историю статусов
+            loadDeviceStatusHistory(deviceId);
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            showNotification('Ошибка', 'Ошибка загрузки устройства', 'error');
+        });
+}
+
+function editDevice(deviceId) {
+    // Загружаем данные устройства для редактирования
+    fetch(`/api/devices/${deviceId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showNotification('Ошибка', 'Ошибка загрузки устройства: ' + data.error, 'error');
+                return;
+            }
+            
+            // Заполняем форму редактирования
+            document.getElementById('editDeviceId').value = deviceId;
+            document.getElementById('editDeviceType').value = data.device_type || '';
+            document.getElementById('editDeviceBrand').value = data.brand || '';
+            document.getElementById('editDeviceModel').value = data.model || '';
+            document.getElementById('editDeviceSerial').value = data.serial_number || '';
+            document.getElementById('editDeviceImei').value = data.imei || '';
+            document.getElementById('editDeviceCondition').value = data.condition || '';
+            document.getElementById('editDeviceDescription').value = data.external_description || '';
+            document.getElementById('editDeviceCompleteness').value = data.completeness || '';
+            
+            // Показываем модальное окно
+            new bootstrap.Modal(document.getElementById('editDeviceModal')).show();
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            showNotification('Ошибка', 'Ошибка загрузки устройства', 'error');
+        });
+}
+
+function saveDeviceEdit() {
+    const deviceId = document.getElementById('editDeviceId').value;
+    const formData = {
+        device_type: document.getElementById('editDeviceType').value,
+        brand: document.getElementById('editDeviceBrand').value,
+        model: document.getElementById('editDeviceModel').value,
+        serial_number: document.getElementById('editDeviceSerial').value,
+        imei: document.getElementById('editDeviceImei').value,
+        condition: document.getElementById('editDeviceCondition').value,
+        external_description: document.getElementById('editDeviceDescription').value,
+        completeness: document.getElementById('editDeviceCompleteness').value
+    };
+    
+    fetch(`/api/devices/${deviceId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Успех', 'Устройство успешно обновлено', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('editDeviceModal')).hide();
+            loadDevices(); // Перезагружаем список
+        } else {
+            showNotification('Ошибка', 'Ошибка обновления: ' + (data.message || 'Неизвестная ошибка'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка', 'Ошибка при сохранении изменений', 'error');
+    });
+}
+
+function loadDeviceStatusHistory(deviceId) {
+    fetch(`/api/devices/${deviceId}/status-history`)
+        .then(response => response.json())
+        .then(history => {
+            const historyContainer = document.getElementById('deviceStatusHistory');
+            
+            // Получаем сохраненные АВР
+            const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+            const deviceReports = workReports[deviceId] || [];
+            
+            // Объединяем историю статусов и АВР
+            const allEntries = [];
+            
+            // Добавляем записи истории статусов
+            history.forEach(entry => {
+                allEntries.push({
+                    type: 'status',
+                    data: entry,
+                    timestamp: new Date(entry.created_at)
+                });
+            });
+            
+            // Добавляем АВР
+            deviceReports.forEach(report => {
+                console.log('Обрабатываем АВР:', report);
+                // Убеждаемся, что у АВР есть необходимые поля
+                if (!report.parts) report.parts = [];
+                if (!report.services) report.services = [];
+                
+                allEntries.push({
+                    type: 'work_report',
+                    data: report,
+                    timestamp: new Date(report.created_at)
+                });
+            });
+            
+            // Сортируем по времени (новые сверху)
+            allEntries.sort((a, b) => b.timestamp - a.timestamp);
+            
+            if (allEntries.length === 0) {
+                historyContainer.innerHTML = '<p class="text-muted">История изменений отсутствует</p>';
+                return;
+            }
+            
+            const historyHTML = allEntries.map(entry => {
+                if (entry.type === 'status') {
+                    const statusData = entry.data;
+                    return `
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong>${statusData.user_name}</strong>
+                                        <span class="badge bg-${getStatusColor(statusData.new_status_display)} ms-2">
+                                            ${statusData.new_status_display}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">${entry.timestamp.toLocaleString('ru-RU')}</small>
+                                </div>
+                                ${statusData.comment ? `<p class="mt-2 mb-0"><small>${statusData.comment}</small></p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                } else if (entry.type === 'work_report') {
+                    const reportData = entry.data;
+                    console.log('Генерируем HTML для АВР:', reportData);
+                    return `
+                        <div class="card mb-2 border-success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong><i class="bi bi-file-text text-success"></i> Акт выполненных работ</strong>
+                                        <span class="badge bg-success ms-2">АВР #${reportData.id}</span>
+                                    </div>
+                                    <small class="text-muted">${entry.timestamp.toLocaleString('ru-RU')}</small>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="mb-1"><strong>Стоимость:</strong> ${reportData.total_cost} ₽</p>
+                                    <p class="mb-1"><strong>Описание:</strong> ${reportData.work_description ? reportData.work_description.substring(0, 100) + (reportData.work_description.length > 100 ? '...' : '') : 'Без описания'}</p>
+                                    ${reportData.parts && reportData.parts.length > 0 ? `<p class="mb-1"><strong>Запчасти:</strong> ${reportData.parts.length} шт.</p>` : ''}
+                                    ${reportData.services && reportData.services.length > 0 ? `<p class="mb-1"><strong>Услуги:</strong> ${reportData.services.length} шт.</p>` : ''}
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="viewWorkReport(${reportData.id})" title="Просмотр">
+                                        <i class="bi bi-eye"></i> Просмотр
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success me-1" onclick="printSavedWorkReport('${reportData.id}')" title="Печать">
+                                        <i class="bi bi-printer"></i> Печать
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteWorkReport('${reportData.id}', ${deviceId})" title="Удалить">
+                                        <i class="bi bi-trash"></i> Удалить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+            
+            historyContainer.innerHTML = historyHTML;
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки истории:', error);
+            document.getElementById('deviceStatusHistory').innerHTML = '<p class="text-danger">Ошибка загрузки истории</p>';
+        });
+}
+
+// Изменение статуса устройства
+function changeDeviceStatus(deviceId, currentStatus) {
+    console.log('changeDeviceStatus called with ID:', deviceId, 'Status:', currentStatus);
+    document.getElementById('statusDeviceId').textContent = '#' + deviceId;
+    document.getElementById('newStatus').value = currentStatus;
+    document.getElementById('statusComment').value = '';
+    
+    new bootstrap.Modal(document.getElementById('changeStatusModal')).show();
+}
+
+// Сохранение изменения статуса
+function saveStatusChange() {
+    const deviceId = document.getElementById('statusDeviceId').textContent.replace('#', '');
+    const newStatus = document.getElementById('newStatus').value;
+    const comment = document.getElementById('statusComment').value;
+    
+    if (!newStatus) {
+        showNotification('Предупреждение', 'Выберите новый статус', 'warning');
+        return;
+    }
+    
+    // Находим устройство в данных
+    const device = devicesData.find(d => d.id == deviceId);
+    if (!device) {
+        showNotification('Предупреждение', 'Устройство не найдено', 'warning');
+        return;
+    }
+    
+    // Получаем ID заказа из latest_order_id
+    const orderId = device.latest_order_id;
+    if (!orderId) {
+        showNotification('Предупреждение', 'У устройства нет активных заказов', 'warning');
+        return;
+    }
+    
+    console.log('Изменяем статус заказа:', orderId, 'на:', newStatus);
+    
+    fetch(`/api/orders/${orderId}/change-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            new_status: newStatus,
+            comment: comment
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Ответ сервера:', data);
+        if (data.success) {
+            // Закрываем модальное окно
+            bootstrap.Modal.getInstance(document.getElementById('changeStatusModal')).hide();
+            
+            // Обновляем страницу
+            loadDevices();
+            showNotification('Успех', 'Статус успешно изменен', 'success');
+        } else {
+            showNotification('Ошибка', 'Ошибка: ' + (data.message || 'Не удалось изменить статус'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        showNotification('Ошибка', 'Ошибка при изменении статуса', 'error');
+    });
+}
+
+// Поиск устройств
+document.getElementById('searchInput').addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    const filteredDevices = devicesData.filter(device => 
+        device.brand.toLowerCase().includes(query) ||
+        device.model.toLowerCase().includes(query) ||
+        (device.serial_number && device.serial_number.toLowerCase().includes(query)) ||
+        (device.device_type && device.device_type.toLowerCase().includes(query)) ||
+        device.client_name.toLowerCase().includes(query)
+    );
+    renderDevices(filteredDevices);
+});
+
+// Функции для заказа ЗИП
+let selectedParts = [];
+let selectedServices = [];
+
+async function orderParts(deviceId) {
+    // Находим устройство в данных
+    const device = devicesData.find(d => d.id === deviceId);
+    if (!device) {
+        showNotification('Ошибка', 'Устройство не найдено', 'error');
+        return;
+    }
+    
+    // Заполняем информацию об устройстве
+    document.getElementById('orderPartsDeviceId').value = deviceId;
+    document.getElementById('orderPartsDeviceInfo').value = `${device.brand} ${device.model}`;
+    document.getElementById('orderPartsClientInfo').value = device.client_name;
+    
+    // Очищаем форму
+    document.getElementById('orderPartsForm').reset();
+    document.getElementById('orderPartsDeviceId').value = deviceId;
+    document.getElementById('orderPartsDeviceInfo').value = `${device.brand} ${device.model}`;
+    document.getElementById('orderPartsClientInfo').value = device.client_name;
+    
+    // Очищаем списки
+    selectedParts = [];
+    selectedServices = [];
+    
+    // Загружаем существующие запчасти и услуги
+    try {
+        console.log('Загружаем существующие запчасти для устройства:', deviceId);
+        const response = await fetch(`/api/devices/${deviceId}/existing-parts`);
+        const data = await response.json();
+        
+        console.log('Ответ API:', data);
+        
+        // Очищаем контейнеры только если нет существующих данных
+        if (!data.parts || data.parts.length === 0) {
+            document.getElementById('selectedParts').innerHTML = '<p class="text-muted mb-0">Запчасти не выбраны</p>';
+        }
+        
+        if (!data.services || data.services.length === 0) {
+            document.getElementById('selectedServices').innerHTML = '<p class="text-muted mb-0">Услуги не выбраны</p>';
+        }
+        
+        if (data.parts && data.parts.length > 0) {
+            console.log('Найдены существующие запчасти:', data.parts);
+            // Очищаем контейнер и добавляем заголовок для существующих запчастей
+            const partsContainer = document.getElementById('selectedParts');
+            partsContainer.innerHTML = '';
+            const existingHeader = document.createElement('div');
+            existingHeader.className = 'alert alert-info mb-2';
+            existingHeader.innerHTML = '<i class="bi bi-info-circle"></i> <strong>Уже заказанные запчасти:</strong>';
+            partsContainer.appendChild(existingHeader);
+            
+            // Добавляем существующие запчасти
+            data.parts.forEach(part => {
+                addPartToList(part.name, part.quantity, part.price, part.total, part.is_stock);
+            });
+        } else {
+            console.log('Запчасти не найдены');
+        }
+        
+        if (data.services && data.services.length > 0) {
+            console.log('Найдены существующие услуги:', data.services);
+            // Очищаем контейнер и добавляем заголовок для существующих услуг
+            const servicesContainer = document.getElementById('selectedServices');
+            servicesContainer.innerHTML = '';
+            const existingHeader = document.createElement('div');
+            existingHeader.className = 'alert alert-info mb-2';
+            existingHeader.innerHTML = '<i class="bi bi-info-circle"></i> <strong>Уже заказанные услуги:</strong>';
+            servicesContainer.appendChild(existingHeader);
+            
+            // Добавляем существующие услуги
+            data.services.forEach(service => {
+                addServiceToList(service.name, service.price);
+            });
+        } else {
+            console.log('Услуги не найдены');
+        }
+        
+        // Устанавливаем общую стоимость и примечания
+        if (data.total_cost > 0) {
+            document.getElementById('totalCost').value = data.total_cost.toFixed(2);
+        }
+        
+        if (data.notes) {
+            document.getElementById('orderNotes').value = data.notes;
+        }
+        
+        // Обновляем заголовок модального окна
+        const modalTitle = document.querySelector('#orderPartsModal .modal-title');
+        if (data.parts && data.parts.length > 0 || data.services && data.services.length > 0) {
+            modalTitle.innerHTML = '<i class="bi bi-package"></i> Дополнительный заказ ЗИП и услуг';
+        } else {
+            modalTitle.innerHTML = '<i class="bi bi-package"></i> Заказ ЗИП и услуг';
+        }
+        
+        // Обновляем общую стоимость
+        updateTotalCost();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки существующих запчастей:', error);
+    }
+    
+    // Показываем модальное окно
+    new bootstrap.Modal(document.getElementById('orderPartsModal')).show();
+}
+
+// Поиск запчастей
+document.getElementById('partSearch').addEventListener('input', async function() {
+    const query = this.value;
+    if (query.length < 2) {
+        document.getElementById('partSuggestions').style.display = 'none';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/parts/stock?q=${encodeURIComponent(query)}`);
+        const parts = await response.json();
+        
+        if (parts.length === 0) {
+            document.getElementById('partSuggestions').innerHTML = '<div class="list-group-item text-muted">Запчасти не найдены</div>';
+        } else {
+            const suggestionsHTML = parts.map(part => `
+                <div class="list-group-item list-group-item-action" onclick="addPart(${part.id}, '${part.name}', ${part.price}, ${part.available_quantity})">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>${part.name}</strong>
+                            <br><small class="text-muted">Артикул: ${part.article}</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-success">${part.price} ₽</div>
+                            <small class="text-muted">В наличии: ${part.available_quantity}</small>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('partSuggestions').innerHTML = suggestionsHTML;
+        }
+        document.getElementById('partSuggestions').style.display = 'block';
+    } catch (error) {
+        console.error('Ошибка поиска запчастей:', error);
+        document.getElementById('partSuggestions').innerHTML = '<div class="list-group-item text-danger">Ошибка поиска</div>';
+        document.getElementById('partSuggestions').style.display = 'block';
+    }
+});
+
+// Добавление запчасти
+function addPart(partId, partName, partPrice, availableQuantity) {
+    const quantity = parseInt(document.getElementById('partQuantity').value) || 1;
+    
+    if (quantity > availableQuantity) {
+        showNotification('Предупреждение', `Недостаточно запчастей на складе. Доступно: ${availableQuantity}`, 'warning');
+        return;
+    }
+    
+    const existingPart = selectedParts.find(p => p.id === partId);
+    if (existingPart) {
+        existingPart.quantity += quantity;
+    } else {
+        selectedParts.push({
+            id: partId,
+            name: partName,
+            price: partPrice,
+            quantity: quantity,
+            total: partPrice * quantity
+        });
+    }
+    
+    updateSelectedParts();
+    updateTotalCost();
+    
+    // Очищаем поля поиска
+    document.getElementById('partSearch').value = '';
+    document.getElementById('partQuantity').value = '1';
+    document.getElementById('partSuggestions').style.display = 'none';
+}
+
+// Обновление списка выбранных запчастей
+function updateSelectedParts() {
+    const container = document.getElementById('selectedParts');
+    
+    if (selectedParts.length === 0) {
+        container.innerHTML = '<p class="text-muted">Запчасти не выбраны</p>';
+        return;
+    }
+    
+    const partsHTML = selectedParts.map((part, index) => `
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+                <strong>${part.name}</strong>
+                <br><small class="text-muted">${part.price} ₽ × ${part.quantity} = ${part.total} ₽</small>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="removePart(${index})">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `).join('');
+    
+    container.innerHTML = partsHTML;
+}
+
+// Удаление запчасти
+function removePart(index) {
+    selectedParts.splice(index, 1);
+    updateSelectedParts();
+    updateTotalCost();
+}
+
+// Добавление услуги
+function addService() {
+    const name = document.getElementById('serviceName').value.trim();
+    const price = parseFloat(document.getElementById('servicePrice').value) || 0;
+    
+    if (!name) {
+        showNotification('Предупреждение', 'Введите название услуги', 'warning');
+        return;
+    }
+    
+    if (price <= 0) {
+        showNotification('Предупреждение', 'Введите корректную стоимость услуги', 'warning');
+        return;
+    }
+    
+    // Добавляем услугу в DOM
+    addServiceToList(name, price);
+    
+    // Очищаем поля
+    document.getElementById('serviceName').value = '';
+    document.getElementById('servicePrice').value = '';
+}
+
+// Добавление услуги в список
+function addServiceToList(name, price) {
+    const selectedServices = document.getElementById('selectedServices');
+    
+    // Проверяем, есть ли уже такая услуга
+    const existingService = selectedServices.querySelector(`[data-service-name="${name}"]`);
+    if (existingService) {
+        showNotification('Предупреждение', 'Такая услуга уже добавлена', 'warning');
+        return;
+    }
+    
+    // Создаем новый элемент услуги
+    const serviceElement = document.createElement('div');
+    serviceElement.className = 'd-flex justify-content-between align-items-center mb-2 p-2 border rounded';
+    serviceElement.setAttribute('data-service-name', name);
+    serviceElement.setAttribute('data-service-price', price);
+    serviceElement.innerHTML = `
+        <div class="flex-grow-1">
+            <strong>${name}</strong>
+            <br><small class="text-muted">${price} ₽</small>
+        </div>
+        <button class="btn btn-outline-danger btn-sm" onclick="removeService(this)">
+            <i class="bi bi-trash"></i>
+        </button>
+    `;
+    
+    selectedServices.appendChild(serviceElement);
+    
+    // Обновляем общую стоимость
+    updateTotalCost();
+}
+
+// Удаление услуги
+function removeService(button) {
+    const serviceElement = button.closest('[data-service-name]');
+    serviceElement.remove();
+    updateTotalCost();
+}
+
+// Обновление списка выбранных услуг
+function updateSelectedServices() {
+    const container = document.getElementById('selectedServices');
+    
+    if (selectedServices.length === 0) {
+        container.innerHTML = '<p class="text-muted">Услуги не выбраны</p>';
+        return;
+    }
+    
+    const servicesHTML = selectedServices.map((service, index) => `
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+                <strong>${service.name}</strong>
+                <br><small class="text-muted">${service.price} ₽</small>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="removeService(${index})">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `).join('');
+    
+    container.innerHTML = servicesHTML;
+}
+
+// Удаление услуги
+function removeService(index) {
+    selectedServices.splice(index, 1);
+    updateSelectedServices();
+    updateTotalCost();
+}
+
+// Обновление общей стоимости
+function updateTotalCost() {
+    const selectedParts = document.getElementById('selectedParts');
+    const selectedServices = document.getElementById('selectedServices');
+    const totalCostInput = document.getElementById('totalCost');
+    
+    let totalCost = 0;
+    
+    // Суммируем стоимость запчастей
+    const partTotals = selectedParts.querySelectorAll('.part-total');
+    partTotals.forEach(total => {
+        const cost = parseFloat(total.textContent.replace(' ₽', ''));
+        totalCost += cost;
+    });
+    
+    // Суммируем стоимость услуг
+    const serviceElements = selectedServices.querySelectorAll('[data-service-price]');
+    serviceElements.forEach(element => {
+        const price = parseFloat(element.getAttribute('data-service-price'));
+        totalCost += price;
+    });
+    totalCostInput.value = totalCost.toFixed(2);
+}
+
+// Обновление стоимости запчасти при изменении количества
+function updatePartTotal(quantityInput) {
+    const partElement = quantityInput.closest('[data-part-name]');
+    const price = parseFloat(partElement.getAttribute('data-part-price'));
+    const quantity = parseInt(quantityInput.value);
+    const total = price * quantity;
+    
+    const totalSpan = partElement.querySelector('.part-total');
+    totalSpan.textContent = `${total.toFixed(2)} ₽`;
+    
+    updateTotalCost();
+}
+
+// Получение выбранных запчастей из DOM
+function getSelectedPartsFromDOM() {
+    const parts = [];
+    const selectedPartsContainer = document.getElementById('selectedParts');
+    const partElements = selectedPartsContainer.querySelectorAll('[data-part-name]');
+    
+    partElements.forEach(element => {
+        const name = element.getAttribute('data-part-name');
+        const quantity = parseInt(element.querySelector('.part-quantity').value);
+        const price = parseFloat(element.getAttribute('data-part-price'));
+        const total = parseFloat(element.querySelector('.part-total').textContent.replace(' ₽', ''));
+        const isStock = element.getAttribute('data-is-stock') === 'true';
+        const stockPartId = element.getAttribute('data-stock-part-id');
+        
+        parts.push({
+            name: name,
+            quantity: quantity,
+            price: price,
+            total: total,
+            is_stock: isStock,
+            stock_part_id: stockPartId
+        });
+    });
+    
+    return parts;
+}
+
+// Получение выбранных услуг из DOM
+function getSelectedServicesFromDOM() {
+    const services = [];
+    const selectedServicesContainer = document.getElementById('selectedServices');
+    const serviceElements = selectedServicesContainer.querySelectorAll('[data-service-name]');
+    
+    serviceElements.forEach(element => {
+        const name = element.getAttribute('data-service-name');
+        const price = parseFloat(element.getAttribute('data-service-price'));
+        
+        services.push({
+            name: name,
+            price: price
+        });
+    });
+    
+    return services;
+}
+
+// Отправка заказа ЗИП
+async function submitPartsOrder() {
+    const deviceId = document.getElementById('orderPartsDeviceId').value;
+    const notes = document.getElementById('orderNotes').value.trim();
+    const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+    
+    // Получаем данные из DOM элементов
+    const parts = getSelectedPartsFromDOM();
+    const services = getSelectedServicesFromDOM();
+    
+    if (parts.length === 0 && services.length === 0) {
+        showNotification('Предупреждение', 'Выберите хотя бы одну запчасть или услугу', 'warning');
+        return;
+    }
+    
+    if (totalCost <= 0) {
+        showNotification('Предупреждение', 'Общая стоимость должна быть больше нуля', 'warning');
+        return;
+    }
+    
+    const orderData = {
+        device_id: parseInt(deviceId),
+        parts: parts,
+        services: services,
+        total_cost: totalCost,
+        notes: notes
+    };
+    
+    try {
+        const response = await fetch('/api/devices/order-parts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(orderData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Успех', result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('orderPartsModal')).hide();
+            loadDevices(); // Обновляем список устройств
+        } else {
+            showNotification('Ошибка', 'Ошибка создания заказа: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка создания заказа ЗИП:', error);
+        showNotification('Ошибка', 'Ошибка создания заказа ЗИП', 'error');
+    }
+}
+
+// Обработчики для модального окна заказа ЗИП
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчик для кнопки Enter в поле названия услуги
+    document.getElementById('serviceName').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addService();
+        }
+    });
+    
+    // Обработчик для кнопки Enter в поле стоимости услуги
+    document.getElementById('servicePrice').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addService();
+        }
+    });
+    
+    // Обработчик поиска по складу
+    document.getElementById('stockSearch').addEventListener('input', function() {
+        loadStockParts();
+    });
+});
+
+// Открытие модального окна выбора запчастей со склада
+function openStockPartsModal() {
+    const modal = new bootstrap.Modal(document.getElementById('stockPartsModal'));
+    modal.show();
+    loadStockParts();
+}
+
+// Загрузка запчастей со склада
+async function loadStockParts() {
+    const searchQuery = document.getElementById('stockSearch').value;
+    const stockPartsList = document.getElementById('stockPartsList');
+    
+    try {
+        const response = await fetch(`/api/parts/stock?q=${encodeURIComponent(searchQuery)}`);
+        const parts = await response.json();
+        
+        if (parts.length === 0) {
+            stockPartsList.innerHTML = '<div class="text-center text-muted"><i class="bi bi-inbox"></i> Запчасти не найдены</div>';
+            return;
+        }
+        
+        let html = '';
+        parts.forEach(part => {
+            const isLowStock = part.quantity <= part.min_quantity;
+            const stockText = isLowStock ? 'Низкий остаток' : `В наличии: ${part.quantity} шт.`;
+            
+            html += `
+                <div class="stock-part-card" data-part-id="${part.id}">
+                    <div class="part-info">
+                        <div class="flex-grow-1">
+                            <div class="part-name">${part.name}</div>
+                            <div class="part-details">
+                                <strong>Артикул:</strong> ${part.article || 'Без артикула'} | 
+                                <strong>Категория:</strong> ${part.category || 'Без категории'}
+                            </div>
+                            <div class="part-stock ${isLowStock ? 'text-warning' : 'text-success'}">
+                                ${stockText}
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="part-price">${part.price} ₽</div>
+                            <div class="quantity-selector">
+                                <input type="number" class="form-control form-control-sm part-quantity" 
+                                       value="1" min="1" max="${part.quantity}" 
+                                       data-part-id="${part.id}" 
+                                       style="width: 60px; text-align: center;">
+                            </div>
+                            <button class="add-btn" onclick="addStockPartWithQuantity(${part.id}, '${part.name}', ${part.price})">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        stockPartsList.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Ошибка загрузки запчастей со склада:', error);
+        stockPartsList.innerHTML = '<div class="text-center text-danger"><i class="bi bi-exclamation-triangle"></i> Ошибка загрузки запчастей</div>';
+    }
+}
+
+// Добавление запчасти со склада
+function addStockPart(partId, partName, partPrice, quantity = null) {
+    // Если количество не передано, используем общее поле количества
+    if (quantity === null) {
+        quantity = parseInt(document.getElementById('stockQuantity').value) || 1;
+    }
+    const total = partPrice * quantity;
+    
+    // Добавляем в список выбранных запчастей
+    addPartToList(partName, quantity, partPrice, total, true, partId);
+    
+    // Закрываем модальное окно
+    const modal = bootstrap.Modal.getInstance(document.getElementById('stockPartsModal'));
+    modal.hide();
+}
+
+// Добавление выбранных запчастей со склада
+function addSelectedStockParts() {
+    const checkboxes = document.querySelectorAll('.stock-part-checkbox:checked');
+    const quantity = parseInt(document.getElementById('stockQuantity').value) || 1;
+    
+    checkboxes.forEach(checkbox => {
+        const card = checkbox.closest('.stock-part-item');
+        const partId = card.dataset.partId;
+        const partName = card.querySelector('h6').textContent;
+        const partPrice = parseFloat(card.querySelector('strong').textContent.replace(' ₽', ''));
+        const total = partPrice * quantity;
+        
+        addPartToList(partName, quantity, partPrice, total, true, partId);
+    });
+    
+    // Закрываем модальное окно
+    const modal = bootstrap.Modal.getInstance(document.getElementById('stockPartsModal'));
+    modal.hide();
+}
+
+// Добавление запчасти в список
+function addPartToList(name, quantity, price, total, isStock = false, stockPartId = null) {
+    const selectedParts = document.getElementById('selectedParts');
+    
+    // Проверяем, есть ли уже такая запчасть
+    const existingPart = selectedParts.querySelector(`[data-part-name="${name}"]`);
+    if (existingPart) {
+        // Обновляем количество и стоимость
+        const quantityInput = existingPart.querySelector('.part-quantity');
+        const totalSpan = existingPart.querySelector('.part-total');
+        const newQuantity = parseInt(quantityInput.value) + quantity;
+        const newTotal = newQuantity * price;
+        
+        quantityInput.value = newQuantity;
+        totalSpan.textContent = `${newTotal} ₽`;
+        
+        // Обновляем общую стоимость
+        updateTotalCost();
+        return;
+    }
+    
+    // Создаем новый элемент запчасти
+    const partElement = document.createElement('div');
+    partElement.className = 'd-flex justify-content-between align-items-center mb-2 p-2 border rounded';
+    partElement.setAttribute('data-part-name', name);
+    partElement.setAttribute('data-part-price', price);
+    partElement.setAttribute('data-is-stock', isStock);
+    if (isStock && stockPartId) {
+        partElement.setAttribute('data-stock-part-id', stockPartId);
+    }
+    
+    const stockBadge = isStock ? '<span class="badge bg-success me-2">Со склада</span>' : '';
+    
+    partElement.innerHTML = `
+        <div class="flex-grow-1">
+            <div class="d-flex align-items-center">
+                ${stockBadge}
+                <strong>${name}</strong>
+            </div>
+            <div class="d-flex align-items-center mt-1">
+                <label class="form-label me-2 mb-0">Кол-во:</label>
+                <input type="number" class="form-control form-control-sm part-quantity me-2" 
+                       value="${quantity}" min="1" style="width: 80px;" 
+                       onchange="updatePartTotal(this)">
+                <span class="text-muted me-2">× ${price} ₽</span>
+                <span class="part-total fw-bold">${total} ₽</span>
+            </div>
+        </div>
+        <button class="btn btn-outline-danger btn-sm" onclick="removePart(this)">
+            <i class="bi bi-trash"></i>
+        </button>
+    `;
+    
+    selectedParts.appendChild(partElement);
+    
+    // Обновляем общую стоимость
+    updateTotalCost();
+}
+
+// Обновление общей стоимости запчасти
+function updatePartTotal(quantityInput) {
+    const partElement = quantityInput.closest('[data-part-name]');
+    const price = parseFloat(partElement.querySelector('.text-muted').textContent.match(/(\d+)/)[1]);
+    const quantity = parseInt(quantityInput.value);
+    const total = price * quantity;
+    
+    partElement.querySelector('.part-total').textContent = `${total} ₽`;
+    updateTotalCost();
+}
+
+// Удаление запчасти из списка
+function removePart(button) {
+    const partElement = button.closest('[data-part-name]');
+    partElement.remove();
+    updateTotalCost();
+}
+
+// Добавление запчасти со склада с указанным количеством
+function addStockPartWithQuantity(partId, name, price) {
+    const quantityInput = document.querySelector(`input[data-part-id="${partId}"]`);
+    const quantity = parseInt(quantityInput.value) || 1;
+    
+    // Проверяем максимальное количество
+    const maxQuantity = parseInt(quantityInput.getAttribute('max'));
+    if (quantity > maxQuantity) {
+        showNotification('Предупреждение', `Максимальное количество: ${maxQuantity} шт.`, 'warning');
+        return;
+    }
+    
+    addStockPart(partId, name, price, quantity);
+}
+
+// Добавление пользовательской запчасти
+function addCustomPart() {
+    const partName = document.getElementById('partSearch').value.trim();
+    const quantity = parseInt(document.getElementById('partQuantity').value) || 1;
+    const price = parseFloat(document.getElementById('partPrice').value) || 0;
+    
+    if (!partName) {
+        showNotification('Предупреждение', 'Введите название запчасти', 'warning');
+        return;
+    }
+    
+    if (price <= 0) {
+        showNotification('Предупреждение', 'Введите цену запчасти', 'warning');
+        return;
+    }
+    
+    const total = price * quantity;
+    
+    // Добавляем в список выбранных запчастей
+    addPartToList(partName, quantity, price, total, false);
+    
+    // Очищаем поля
+    document.getElementById('partSearch').value = '';
+    document.getElementById('partQuantity').value = '1';
+    document.getElementById('partPrice').value = '';
+}
+
+// Функция для показа уведомлений
+function showNotification(title, message, type = 'info') {
+    const modal = document.getElementById('notificationModal');
+    const header = document.getElementById('notificationHeader');
+    const icon = document.getElementById('notificationIcon');
+    const titleElement = document.getElementById('notificationTitle');
+    const messageElement = document.getElementById('notificationMessage');
+    
+    // Устанавливаем содержимое
+    titleElement.textContent = title;
+    messageElement.textContent = message;
+    
+    // Устанавливаем стиль в зависимости от типа
+    header.className = 'modal-header';
+    icon.className = 'bi';
+    
+    switch(type) {
+        case 'success':
+            header.classList.add('bg-success', 'text-white');
+            icon.classList.add('bi-check-circle-fill');
+            break;
+        case 'error':
+            header.classList.add('bg-danger', 'text-white');
+            icon.classList.add('bi-exclamation-triangle-fill');
+            break;
+        case 'warning':
+            header.classList.add('bg-warning', 'text-dark');
+            icon.classList.add('bi-exclamation-circle-fill');
+            break;
+        default:
+            header.classList.add('bg-info', 'text-white');
+            icon.classList.add('bi-info-circle-fill');
+    }
+    
+    // Показываем модальное окно
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+
+// Обновление общей стоимости
+
+// Создание акта выполненных работ
+function createWorkReport(deviceId) {
+    console.log('=== ОТЛАДКА АВР ===');
+    console.log('Creating work report for device:', deviceId);
+    console.log('=== ФУНКЦИЯ ВЫЗВАНА ===');
+    
+    // Загружаем данные устройства
+    fetch(`/api/devices/${deviceId}`)
+        .then(response => response.json())
+        .then(deviceData => {
+            if (deviceData.error) {
+                showNotification('Ошибка', 'Не удалось загрузить данные устройства', 'error');
+                return;
+            }
+            
+            // Показываем модальное окно акта выполненных работ
+            showWorkReportModal(deviceData);
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки данных устройства:', error);
+            showNotification('Ошибка', 'Ошибка загрузки данных устройства', 'error');
+        });
+}
+
+// Показать модальное окно акта выполненных работ
+function showWorkReportModal(deviceData) {
+    console.log('=== ОТЛАДКА МОДАЛЬНОГО ОКНА ===');
+    console.log('Showing work report modal with data:', deviceData);
+    console.log('=== МОДАЛЬНОЕ ОКНО ВЫЗВАНО ===');
+    
+    // Удаляем старое модальное окно если есть
+    const existingModal = document.getElementById('workReportModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Создаем новое модальное окно
+    const modal = createWorkReportModal();
+    document.body.appendChild(modal);
+    
+    // Сохраняем данные устройства в глобальной переменной
+    window.currentWorkReportDeviceData = deviceData;
+    
+    // Заполняем данные
+    document.getElementById('workReportDeviceId').value = deviceData.id;
+    
+    // Загружаем заказанные запчасти
+    loadOrderedParts(deviceData.id);
+    
+    // Закрываем все другие модальные окна перед показом нового
+    const existingModals = document.querySelectorAll('.modal.show, .modal[style*="display: block"]');
+    existingModals.forEach(existingModal => {
+        if (existingModal.id !== 'workReportModal') {
+            const bsExistingModal = bootstrap.Modal.getInstance(existingModal);
+            if (bsExistingModal) {
+                bsExistingModal.hide();
+            }
+            existingModal.style.display = 'none';
+            existingModal.classList.remove('show');
+            existingModal.setAttribute('aria-hidden', 'true');
+        }
+    });
+    
+    // Показываем модальное окно
+    console.log('Creating Bootstrap modal...');
+    console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+    
+    if (typeof bootstrap === 'undefined') {
+        console.error('Bootstrap is not loaded!');
+        showNotification('Ошибка', 'Bootstrap не загружен', 'error');
+        return;
+    }
+    
+    const bsModal = new bootstrap.Modal(modal, {
+        backdrop: 'static',
+        keyboard: false
+    });
+    console.log('Bootstrap modal created, showing...');
+    bsModal.show();
+    console.log('Modal show() called');
+    
+    // Принудительная активация поля сразу после показа модального окна
+    setTimeout(() => {
+        const workDescriptionField = document.getElementById('workDescription');
+        if (workDescriptionField) {
+            // Принудительная активация поля
+            workDescriptionField.focus();
+            workDescriptionField.click();
+            
+            // Убираем ВСЕ атрибуты, которые могут блокировать ввод
+            workDescriptionField.removeAttribute('readonly');
+            workDescriptionField.removeAttribute('disabled');
+            workDescriptionField.removeAttribute('tabindex');
+            workDescriptionField.removeAttribute('aria-hidden');
+            workDescriptionField.removeAttribute('inert');
+            
+            // Принудительно устанавливаем стили для активации
+            workDescriptionField.style.pointerEvents = 'auto';
+            workDescriptionField.style.userSelect = 'text';
+            workDescriptionField.style.backgroundColor = 'white';
+            workDescriptionField.style.border = '2px solid #007bff';
+            workDescriptionField.style.zIndex = '9999';
+            workDescriptionField.style.position = 'relative';
+            workDescriptionField.style.display = 'block';
+            workDescriptionField.style.visibility = 'visible';
+            workDescriptionField.style.opacity = '1';
+            
+            // Принудительно активируем поле
+            workDescriptionField.focus();
+            workDescriptionField.click();
+            workDescriptionField.select();
+            
+            // Добавляем обработчики для принудительной активации
+            workDescriptionField.addEventListener('click', function() {
+                this.focus();
+                this.select();
+            });
+            
+            workDescriptionField.addEventListener('focus', function() {
+                this.style.border = '2px solid #28a745';
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            
+            workDescriptionField.addEventListener('blur', function() {
+                this.style.border = '2px solid #007bff';
+                this.style.backgroundColor = 'white';
+            });
+            
+            // Принудительно активируем поле еще раз через короткий интервал
+            setTimeout(() => {
+                workDescriptionField.focus();
+                workDescriptionField.click();
+                workDescriptionField.select();
+            }, 50);
+        }
+    }, 50);
+    
+    // Активируем поле ввода после показа модального окна - принудительная активация
+    setTimeout(() => {
+        const workDescriptionField = document.getElementById('workDescription');
+        if (workDescriptionField) {
+            // Принудительная активация поля
+            workDescriptionField.focus();
+            workDescriptionField.click();
+            
+            // Убираем ВСЕ атрибуты, которые могут блокировать ввод
+            workDescriptionField.removeAttribute('readonly');
+            workDescriptionField.removeAttribute('disabled');
+            workDescriptionField.removeAttribute('tabindex');
+            workDescriptionField.removeAttribute('aria-hidden');
+            workDescriptionField.removeAttribute('inert');
+            
+            // Принудительно устанавливаем стили для активации
+            workDescriptionField.style.pointerEvents = 'auto';
+            workDescriptionField.style.userSelect = 'text';
+            workDescriptionField.style.backgroundColor = 'white';
+            workDescriptionField.style.border = '2px solid #007bff';
+            workDescriptionField.style.zIndex = '9999';
+            workDescriptionField.style.position = 'relative';
+            workDescriptionField.style.display = 'block';
+            workDescriptionField.style.visibility = 'visible';
+            workDescriptionField.style.opacity = '1';
+            
+            // Принудительно активируем поле
+            workDescriptionField.focus();
+            workDescriptionField.click();
+            workDescriptionField.select();
+            
+            // Добавляем обработчики для принудительной активации
+            workDescriptionField.addEventListener('click', function() {
+                this.focus();
+                this.select();
+            });
+            
+            workDescriptionField.addEventListener('focus', function() {
+                this.style.border = '2px solid #28a745';
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            
+            workDescriptionField.addEventListener('blur', function() {
+                this.style.border = '2px solid #007bff';
+                this.style.backgroundColor = 'white';
+            });
+            
+            // Принудительно активируем поле еще раз
+            setTimeout(() => {
+                workDescriptionField.focus();
+                workDescriptionField.click();
+                workDescriptionField.select();
+            }, 100);
+        }
+    }, 100);
+    
+    console.log('Modal should be fullscreen now');
+}
+
+// Загрузка заказанных запчастей
+function loadOrderedParts(deviceId) {
+    console.log('Loading ordered parts for device:', deviceId);
+    
+    fetch(`/api/devices/${deviceId}/ordered-parts`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('API Response:', data);
+            if (data.parts || data.services) {
+                let addedItems = 0;
+                
+                // Обрабатываем запчасти
+                if (data.parts && data.parts.length > 0) {
+                    console.log('Found ordered parts:', data.parts);
+                    
+                    // Очищаем список запчастей
+                    const partsList = document.getElementById('workReportPartsList');
+                    partsList.innerHTML = '';
+                    
+                    // Добавляем заказанные запчасти
+                    data.parts.forEach(part => {
+                        addWorkReportPartFromOrder(part);
+                        addedItems++;
+                    });
+                } else {
+                    // Показываем сообщение что запчасти не добавлены
+                    const partsList = document.getElementById('workReportPartsList');
+                    partsList.innerHTML = '<p class="text-muted">Запчасти не добавлены</p>';
+                }
+                
+                // Обрабатываем услуги
+                if (data.services && data.services.length > 0) {
+                    console.log('Found ordered services:', data.services);
+                    
+                    // Очищаем список услуг
+                    const servicesList = document.getElementById('workReportServicesList');
+                    servicesList.innerHTML = '';
+                    
+                    // Добавляем заказанные услуги
+                    data.services.forEach(service => {
+                        addWorkReportServiceFromOrder(service);
+                        addedItems++;
+                    });
+                } else {
+                    // Показываем сообщение что услуги не добавлены
+                    const servicesList = document.getElementById('workReportServicesList');
+                    servicesList.innerHTML = '<p class="text-muted">Услуги не добавлены</p>';
+                }
+                
+                // Обновляем общую стоимость
+                updateWorkReportTotal();
+                
+                if (addedItems > 0) {
+                    showNotification('Успех', `Автоматически добавлено ${addedItems} заказанных позиций`, 'success');
+                } else {
+                    console.log('No ordered parts or services found');
+                }
+            } else {
+                console.log('No ordered parts found');
+                // Показываем сообщение что запчасти не добавлены
+                const partsList = document.getElementById('workReportPartsList');
+                partsList.innerHTML = '<p class="text-muted">Запчасти не добавлены</p>';
+                const servicesList = document.getElementById('workReportServicesList');
+                servicesList.innerHTML = '<p class="text-muted">Услуги не добавлены</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading ordered parts:', error);
+            // Показываем сообщение что запчасти не добавлены
+            const partsList = document.getElementById('workReportPartsList');
+            partsList.innerHTML = '<p class="text-muted">Запчасти не добавлены</p>';
+        });
+}
+
+// Добавление запчасти из заказа
+function addWorkReportPartFromOrder(partData) {
+    const partsList = document.getElementById('workReportPartsList');
+    
+    // Удаляем сообщение "Запчасти не добавлены" если есть
+    const emptyMessage = partsList.querySelector('.text-muted');
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+    
+    const partItem = document.createElement('div');
+    partItem.className = 'border rounded p-2 mb-2 bg-light';
+    partItem.innerHTML = `
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <strong class="small">${partData.name}</strong>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Кол-во:</label>
+                <input type="number" class="form-control form-control-sm" value="${partData.quantity}" min="1" onchange="updateWorkReportItemTotal(this)">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Цена:</label>
+                <input type="number" class="form-control form-control-sm" value="${partData.price}" min="0" step="0.01" onchange="updateWorkReportItemTotal(this)">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Сумма:</label>
+                <div class="form-control form-control-sm bg-light" readonly>${(partData.quantity * partData.price).toFixed(2)} ₽</div>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeWorkReportItem(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-12">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 
+                    Заказано ${partData.order_date} (Заказ №${partData.order_id})
+                </small>
+            </div>
+        </div>
+    `;
+    
+    partsList.appendChild(partItem);
+}
+
+// Добавление услуги из заказа
+function addWorkReportServiceFromOrder(serviceData) {
+    const servicesList = document.getElementById('workReportServicesList');
+    
+    // Удаляем сообщение "Услуги не добавлены" если есть
+    const emptyMessage = servicesList.querySelector('.text-muted');
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+    
+    const serviceItem = document.createElement('div');
+    serviceItem.className = 'border rounded p-2 mb-2 bg-light';
+    serviceItem.innerHTML = `
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <strong class="small">${serviceData.name}</strong>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Стоимость:</label>
+                <input type="number" class="form-control form-control-sm" value="${serviceData.price}" min="0" step="0.01" onchange="updateWorkReportTotal()">
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeWorkReportItem(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-12">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 
+                    Заказано ${serviceData.order_date} (Заказ №${serviceData.order_id})
+                </small>
+            </div>
+        </div>
+    `;
+    
+    servicesList.appendChild(serviceItem);
+}
+
+// Создание HTML модального окна акта выполненных работ
+function createWorkReportModal() {
+    const modal = document.createElement('div');
+    modal.id = 'workReportModal';
+    modal.className = 'modal fade';
+    modal.setAttribute('tabindex', '-1');
+    modal.innerHTML = `
+        <style>
+            #workReportModal .modal-dialog {
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100vw !important;
+                height: 100vh !important;
+            }
+            #workReportModal .modal-content {
+                height: 100vh !important;
+                border-radius: 0 !important;
+            }
+            #workReportModal .modal-header {
+                border-radius: 0 !important;
+            }
+        </style>
+        <div class="modal-dialog modal-fullscreen" style="margin: 0 !important; max-width: 100% !important; width: 100vw !important; height: 100vh !important;">
+            <div class="modal-content" style="height: 100vh !important; border-radius: 0 !important;">
+                <div class="modal-header" style="border-radius: 0 !important;">
+                    <h5 class="modal-title">
+                        <i class="bi bi-file-earmark-check"></i> Акт выполненных работ
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="max-height: calc(100vh - 120px) !important; overflow-y: auto; padding: 15px;">
+                    <form id="workReportForm">
+                        <input type="hidden" id="workReportDeviceId">
+                        
+                        
+                        <!-- Выполненные работы -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2">
+                                <h6 class="mb-0"><i class="bi bi-tools"></i> Выполненные работы</h6>
+                            </div>
+                            <div class="card-body py-2">
+                                <div class="mb-2">
+                                    <label class="form-label small">Примечание</label>
+                                    <textarea id="workDescription" rows="4" placeholder="Подробное описание выполненных работ..." required style="width: 100%; padding: 8px; border: 2px solid #007bff; border-radius: 4px; font-size: 14px; background: white; resize: vertical; min-height: 80px;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Использованные запчасти и услуги -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0"><i class="bi bi-box-seam"></i> Использованные запчасти</h6>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="addWorkReportPart()">
+                                            <i class="bi bi-plus"></i> Добавить
+                                        </button>
+                                    </div>
+                                    <div class="card-body py-2" style="max-height: 300px; overflow-y: auto;">
+                                        <div id="workReportPartsList">
+                                            <p class="text-muted small">Запчасти не добавлены</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0"><i class="bi bi-gear"></i> Выполненные услуги</h6>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="addWorkReportService()">
+                                            <i class="bi bi-plus"></i> Добавить
+                                        </button>
+                                    </div>
+                                    <div class="card-body py-2" style="max-height: 300px; overflow-y: auto;">
+                                        <div id="workReportServicesList">
+                                            <p class="text-muted small">Услуги не добавлены</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Итоговая информация -->
+                        <div class="card mb-3">
+                            <div class="card-header py-2">
+                                <h6 class="mb-0"><i class="bi bi-calculator"></i> Итоговая информация</h6>
+                            </div>
+                            <div class="card-body py-2">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-2">
+                                            <label class="form-label small">Общая стоимость работ</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" class="form-control" id="totalWorkCost" value="0" min="0" step="0.01" readonly>
+                                                <span class="input-group-text">₽</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-2">
+                                            <label class="form-label small">Гарантийный срок</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" class="form-control" id="warrantyPeriod" value="30" min="0">
+                                                <span class="input-group-text">дней</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-2">
+                                            <label class="form-label small">Дополнительные примечания</label>
+                                            <textarea class="form-control form-control-sm" id="workNotes" rows="3" placeholder="Дополнительная информация..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-success" onclick="saveWorkReport()">
+                        <i class="bi bi-save"></i> Сохранить акт
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="printWorkReport()">
+                        <i class="bi bi-printer"></i> Печать
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Дополнительная активация поля после создания - принудительная активация
+    setTimeout(() => {
+        const workDescriptionField = modal.querySelector('#workDescription');
+        if (workDescriptionField) {
+            // Принудительная активация поля
+            workDescriptionField.focus();
+            workDescriptionField.click();
+            
+            // Убираем ВСЕ атрибуты, которые могут блокировать ввод
+            workDescriptionField.removeAttribute('readonly');
+            workDescriptionField.removeAttribute('disabled');
+            workDescriptionField.removeAttribute('tabindex');
+            workDescriptionField.removeAttribute('aria-hidden');
+            workDescriptionField.removeAttribute('inert');
+            
+            // Принудительно устанавливаем стили для активации
+            workDescriptionField.style.pointerEvents = 'auto';
+            workDescriptionField.style.userSelect = 'text';
+            workDescriptionField.style.backgroundColor = 'white';
+            workDescriptionField.style.border = '2px solid #007bff';
+            workDescriptionField.style.zIndex = '9999';
+            workDescriptionField.style.position = 'relative';
+            workDescriptionField.style.display = 'block';
+            workDescriptionField.style.visibility = 'visible';
+            workDescriptionField.style.opacity = '1';
+            
+            // Принудительно активируем поле
+            workDescriptionField.focus();
+            workDescriptionField.click();
+            workDescriptionField.select();
+            
+            // Добавляем обработчики для принудительной активации
+            workDescriptionField.addEventListener('click', function() {
+                this.focus();
+                this.select();
+            });
+            
+            workDescriptionField.addEventListener('focus', function() {
+                this.style.border = '2px solid #28a745';
+                this.style.backgroundColor = '#f8f9fa';
+            });
+            
+            workDescriptionField.addEventListener('blur', function() {
+                this.style.border = '2px solid #007bff';
+                this.style.backgroundColor = 'white';
+            });
+        }
+    }, 50);
+    
+    return modal;
+}
+
+// Добавление запчасти в акт выполненных работ
+function addWorkReportPart() {
+    const partName = prompt('Название запчасти:');
+    if (!partName) return;
+    
+    const quantity = parseInt(prompt('Количество:', '1')) || 1;
+    const price = parseFloat(prompt('Цена за единицу:', '0')) || 0;
+    
+    const total = quantity * price;
+    
+    const partsList = document.getElementById('workReportPartsList');
+    if (partsList.innerHTML.includes('Запчасти не добавлены')) {
+        partsList.innerHTML = '';
+    }
+    
+    const partItem = document.createElement('div');
+    partItem.className = 'border rounded p-2 mb-2 bg-light';
+    partItem.innerHTML = `
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <strong class="small">${partName}</strong>
+            </div>
+            <div class="col-md-2">
+                <span class="text-muted small">Кол-во: ${quantity}</span>
+            </div>
+            <div class="col-md-2">
+                <span class="text-muted small">Цена: ${price.toFixed(2)} ₽</span>
+            </div>
+            <div class="col-md-2">
+                <strong class="small">${total.toFixed(2)} ₽</strong>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeWorkReportItem(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    partsList.appendChild(partItem);
+    updateWorkReportTotal();
+}
+
+// Добавление услуги в акт выполненных работ
+function addWorkReportService() {
+    const serviceName = prompt('Название услуги:');
+    if (!serviceName) return;
+    
+    const price = parseFloat(prompt('Стоимость услуги:', '0')) || 0;
+    
+    const servicesList = document.getElementById('workReportServicesList');
+    if (servicesList.innerHTML.includes('Услуги не добавлены')) {
+        servicesList.innerHTML = '';
+    }
+    
+    const serviceItem = document.createElement('div');
+    serviceItem.className = 'border rounded p-2 mb-2 bg-light';
+    serviceItem.innerHTML = `
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <strong class="small">${serviceName}</strong>
+            </div>
+            <div class="col-md-4">
+                <strong class="small">${price.toFixed(2)} ₽</strong>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeWorkReportItem(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    servicesList.appendChild(serviceItem);
+    updateWorkReportTotal();
+}
+
+// Удаление элемента из акта выполненных работ
+function removeWorkReportItem(button) {
+    button.closest('.border').remove();
+    updateWorkReportTotal();
+}
+
+// Обновление суммы отдельного элемента
+function updateWorkReportItemTotal(input) {
+    const item = input.closest('.border');
+    const inputs = item.querySelectorAll('input[type="number"]');
+    
+    if (inputs.length >= 2) {
+        const quantityInput = inputs[0]; // Первое поле - количество
+        const priceInput = inputs[1];    // Второе поле - цена
+        
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const total = quantity * price;
+        
+        // Обновляем отображение суммы для этого элемента
+        const totalDisplay = item.querySelector('.form-control.bg-light');
+        if (totalDisplay) {
+            totalDisplay.textContent = total.toFixed(2) + ' ₽';
+        }
+    }
+    
+    // Обновляем общую стоимость
+    updateWorkReportTotal();
+}
+
+// Обновление общей стоимости акта выполненных работ
+function updateWorkReportTotal() {
+    let total = 0;
+    
+    // Суммируем запчасти
+    const partsItems = document.querySelectorAll('#workReportPartsList .border');
+    console.log('Found parts items:', partsItems.length);
+    partsItems.forEach((item, index) => {
+        // Ищем все поля ввода в элементе
+        const inputs = item.querySelectorAll('input[type="number"]');
+        console.log(`Part ${index + 1} inputs found:`, inputs.length);
+        
+        if (inputs.length >= 2) {
+            const quantityInput = inputs[0]; // Первое поле - количество
+            const priceInput = inputs[1];    // Второе поле - цена
+            
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const partTotal = quantity * price;
+            console.log(`Part ${index + 1}: quantity=${quantity}, price=${price}, total=${partTotal}`);
+            total += partTotal;
+            
+            // Обновляем отображение суммы для этого элемента
+            const totalDisplay = item.querySelector('.form-control.bg-light');
+            if (totalDisplay) {
+                totalDisplay.textContent = partTotal.toFixed(2) + ' ₽';
+            }
+        }
+    });
+    
+    // Суммируем услуги
+    const servicesItems = document.querySelectorAll('#workReportServicesList .border');
+    console.log('Found services items:', servicesItems.length);
+    servicesItems.forEach((item, index) => {
+        console.log(`Processing service ${index + 1}:`, item);
+        
+        // Ищем поле ввода цены для услуг
+        const priceInput = item.querySelector('input[type="number"]');
+        if (priceInput) {
+            const servicePrice = parseFloat(priceInput.value) || 0;
+            console.log(`Service ${index + 1} price from input:`, servicePrice);
+            total += servicePrice;
+        } else {
+            // Если нет поля ввода, ищем в тексте
+            const priceText = item.querySelector('strong').textContent;
+            const servicePrice = parseFloat(priceText.replace(' ₽', '')) || 0;
+            console.log(`Service ${index + 1} price from text:`, servicePrice);
+            total += servicePrice;
+        }
+    });
+    
+    console.log('Total calculated:', total);
+    document.getElementById('totalWorkCost').value = total.toFixed(2);
+}
+
+// Сохранение акта выполненных работ
+function saveWorkReport() {
+    try {
+        const form = document.getElementById('workReportForm');
+        if (!form || !form.checkValidity()) {
+            if (form) form.reportValidity();
+            return;
+        }
+        
+        // Собираем данные с проверкой существования элементов
+        const workReportData = {
+            device_id: document.getElementById('workReportDeviceId')?.value || '',
+            work_start_date: new Date().toISOString().split('T')[0], // Текущая дата
+            work_end_date: new Date().toISOString().split('T')[0], // Текущая дата
+            work_description: document.getElementById('workDescription')?.value || '',
+            total_cost: document.getElementById('totalWorkCost')?.value || '0',
+            warranty_period: document.getElementById('warrantyPeriod')?.value || '30',
+            notes: document.getElementById('workNotes')?.value || '',
+            parts: [],
+            services: []
+        };
+        
+        // Собираем запчасти с безопасной обработкой
+        const partsItems = document.querySelectorAll('#workReportPartsList .border');
+        partsItems.forEach(item => {
+            try {
+                const nameElement = item.querySelector('strong');
+                const name = nameElement ? nameElement.textContent : 'Неизвестная запчасть';
+                
+                const inputs = item.querySelectorAll('input[type="number"]');
+                if (inputs.length >= 2) {
+                    const quantity = parseFloat(inputs[0].value) || 0;
+                    const price = parseFloat(inputs[1].value) || 0;
+                    workReportData.parts.push({ name, quantity, price, total: quantity * price });
+                }
+            } catch (error) {
+                console.error('Ошибка при обработке запчасти:', error);
+            }
+        });
+        
+        // Собираем услуги с безопасной обработкой
+        const servicesItems = document.querySelectorAll('#workReportServicesList .border');
+        servicesItems.forEach(item => {
+            try {
+                const nameElement = item.querySelector('strong');
+                const name = nameElement ? nameElement.textContent : 'Неизвестная услуга';
+                
+                const priceInput = item.querySelector('input[type="number"]');
+                if (priceInput) {
+                    const price = parseFloat(priceInput.value) || 0;
+                    workReportData.services.push({ name, price });
+                } else {
+                    const priceText = item.querySelectorAll('strong')[1];
+                    if (priceText) {
+                        const price = parseFloat(priceText.textContent.replace(' ₽', '')) || 0;
+                        workReportData.services.push({ name, price });
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при обработке услуги:', error);
+            }
+        });
+        
+        // Сохраняем в localStorage для демонстрации
+        const deviceId = workReportData.device_id;
+        const existingReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+        if (!existingReports[deviceId]) {
+            existingReports[deviceId] = [];
+        }
+        existingReports[deviceId].push({
+            ...workReportData,
+            id: Date.now(),
+            created_at: new Date().toISOString()
+        });
+        localStorage.setItem('workReports', JSON.stringify(existingReports));
+        
+        console.log('Данные акта выполненных работ:', workReportData);
+        showNotification('Успех', 'Акт выполненных работ сохранен', 'success');
+        
+        // Закрываем модальное окно
+        const modal = document.getElementById('workReportModal');
+        if (modal) {
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            if (bsModal) {
+                bsModal.hide();
+            }
+        }
+        
+        // Обновляем отображение АВР в карточке устройства
+        updateDeviceWorkReports(deviceId);
+        
+        // Обновляем стоимость заказов, если мы на странице заказов
+        if (typeof updateAllOrdersCost === 'function') {
+            updateAllOrdersCost();
+        }
+        
+    } catch (error) {
+        console.error('Ошибка при сохранении АВР:', error);
+        showNotification('Ошибка', 'Не удалось сохранить акт выполненных работ', 'error');
+    }
+}
+
+// Обновление отображения АВР в карточке устройства
+function updateDeviceWorkReports(deviceId) {
+    try {
+        const deviceCard = document.querySelector(`[data-device-id="${deviceId}"]`);
+        if (!deviceCard) return;
+        
+        // Получаем сохраненные АВР
+        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+        const deviceReports = workReports[deviceId] || [];
+        
+        // Находим или создаем контейнер для АВР
+        let reportsContainer = deviceCard.querySelector('.work-reports-container');
+        if (!reportsContainer) {
+            reportsContainer = document.createElement('div');
+            reportsContainer.className = 'work-reports-container mt-3';
+            reportsContainer.innerHTML = '<h6 class="mb-2"><i class="bi bi-file-text"></i> АВР:</h6>';
+            deviceCard.appendChild(reportsContainer);
+        }
+        
+        // Очищаем существующие АВР
+        const existingReports = reportsContainer.querySelectorAll('.work-report-item');
+        existingReports.forEach(item => item.remove());
+        
+        // Добавляем сохраненные АВР
+        deviceReports.forEach((report, index) => {
+            const reportItem = document.createElement('div');
+            reportItem.className = 'work-report-item border rounded p-2 mb-2 bg-light';
+            reportItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>АВР #${index + 1}</strong>
+                        <small class="text-muted d-block">
+                            ${new Date(report.created_at).toLocaleDateString('ru-RU')} - 
+                            ${report.total_cost} ₽
+                        </small>
+                        <small class="text-muted">
+                            ${report.work_description ? report.work_description.substring(0, 50) + '...' : 'Без описания'}
+                        </small>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary btn-sm" onclick="viewWorkReport(${report.id})" title="Просмотр">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="printSavedWorkReport('${report.id}')" title="Печать">
+                            <i class="bi bi-printer"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteWorkReport('${report.id}', ${deviceId})" title="Удалить">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            reportsContainer.appendChild(reportItem);
+        });
+        
+    } catch (error) {
+        console.error('Ошибка при обновлении отображения АВР:', error);
+    }
+}
+
+// Просмотр сохраненного АВР
+async function viewWorkReport(reportId) {
+    try {
+        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+        let foundReport = null;
+        let deviceId = null;
+        
+        // Ищем АВР по ID
+        for (const [devId, reports] of Object.entries(workReports)) {
+            const report = reports.find(r => r.id === reportId);
+            if (report) {
+                foundReport = report;
+                deviceId = devId;
+                break;
+            }
+        }
+        
+        if (!foundReport) {
+            showNotification('Ошибка', 'АВР не найден', 'error');
+            return;
+        }
+        
+        // Получаем актуальные данные устройства
+        let deviceData = {};
+        let clientData = {};
+        
+        try {
+            console.log('viewWorkReport: Загружаем данные устройства для ID:', deviceId);
+            const response = await fetch(`/api/devices/${deviceId}`);
+            console.log('viewWorkReport: Ответ API:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                console.error('viewWorkReport: Ошибка API:', response.status, response.statusText);
+                return;
+            }
+            
+            const deviceResponse = await response.json();
+            console.log('viewWorkReport: Данные устройства:', deviceResponse);
+            
+            // API возвращает данные устройства напрямую, а не в формате {success: true, device: {...}}
+            if (deviceResponse && deviceResponse.id) {
+                deviceData = deviceResponse;
+                clientData = deviceData.client || {};
+                console.log('viewWorkReport: Данные устройства получены:', deviceData);
+                console.log('viewWorkReport: Данные клиента получены:', clientData);
+            } else {
+                console.error('viewWorkReport: API вернул некорректные данные:', deviceResponse);
+            }
+        } catch (error) {
+            console.error('viewWorkReport: Ошибка загрузки данных устройства:', error);
+        }
+        
+        // Создаем модальное окно для просмотра
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'viewWorkReportModal';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Просмотр АВР #${foundReport.id}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Дата создания:</strong> ${new Date(foundReport.created_at).toLocaleString('ru-RU')}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Общая стоимость:</strong> ${foundReport.total_cost} ₽
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Клиент:</strong> ${clientData.name || 'Не указан'}<br>
+                                <strong>Телефон:</strong> ${clientData.phone || 'Не указан'}<br>
+                                <strong>Адрес:</strong> ${clientData.address || 'Не указан'}<br>
+                                <strong>Email:</strong> ${clientData.email || 'Не указан'}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Устройство:</strong> ${deviceData.brand || ''} ${deviceData.model || ''}<br>
+                                <strong>Серийный номер:</strong> ${deviceData.serial_number || 'Не указан'}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Примечание:</strong>
+                            <p class="mt-1">${foundReport.work_description || 'Не указано'}</p>
+                        </div>
+                        
+                        ${foundReport.parts.length > 0 ? `
+                        <div class="mb-3">
+                            <strong>Использованные запчасти:</strong>
+                            <ul class="mt-1">
+                                ${foundReport.parts.map(part => `
+                                    <li>${part.name} - ${part.quantity} шт. × ${part.price} ₽ = ${part.total} ₽</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+                        
+                        ${foundReport.services.length > 0 ? `
+                        <div class="mb-3">
+                            <strong>Выполненные услуги:</strong>
+                            <ul class="mt-1">
+                                ${foundReport.services.map(service => `
+                                    <li>${service.name} - ${service.price} ₽</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+                        
+                        ${foundReport.notes ? `
+                        <div class="mb-3">
+                            <strong>Примечания:</strong>
+                            <p class="mt-1">${foundReport.notes}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="button" class="btn btn-success" onclick="printSavedWorkReport(${foundReport.id})">
+                            <i class="bi bi-printer"></i> Печать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Удаляем модальное окно после закрытия
+        modal.addEventListener('hidden.bs.modal', () => {
+            modal.remove();
+        });
+        
+    } catch (error) {
+        console.error('Ошибка при просмотре АВР:', error);
+        showNotification('Ошибка', 'Не удалось открыть АВР', 'error');
+    }
+}
+
+// Печать сохраненного АВР
+function printSavedWorkReport(reportId) {
+    try {
+        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+        let foundReport = null;
+        
+        // Ищем АВР по ID
+        for (const [deviceId, reports] of Object.entries(workReports)) {
+            const report = reports.find(r => r.id === reportId);
+            if (report) {
+                foundReport = report;
+                break;
+            }
+        }
+        
+        if (!foundReport) {
+            showNotification('Ошибка', 'АВР не найден', 'error');
+            return;
+        }
+        
+        // Используем существующую функцию печати
+        printWorkReportFromData(foundReport);
+        
+    } catch (error) {
+        console.error('Ошибка при печати АВР:', error);
+        showNotification('Ошибка', 'Не удалось распечатать АВР', 'error');
+    }
+}
+
+// Удаление АВР
+function deleteWorkReport(reportId, deviceId) {
+    if (!confirm('Вы уверены, что хотите удалить этот АВР?')) {
+        return;
+    }
+    
+    try {
+        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+        if (workReports[deviceId]) {
+            workReports[deviceId] = workReports[deviceId].filter(report => report.id !== reportId);
+            localStorage.setItem('workReports', JSON.stringify(workReports));
+            updateDeviceWorkReports(deviceId);
+            
+            // Обновляем стоимость заказов, если мы на странице заказов
+            if (typeof updateAllOrdersCost === 'function') {
+                updateAllOrdersCost();
+            }
+            
+            showNotification('Успех', 'АВР удален', 'success');
+        }
+    } catch (error) {
+        console.error('Ошибка при удалении АВР:', error);
+        showNotification('Ошибка', 'Не удалось удалить АВР', 'error');
+    }
+}
+
+// Печать АВР из сохраненных данных
+async function printWorkReportFromData(reportData) {
+    try {
+        // Получаем актуальные данные устройства по ID
+        const deviceId = reportData.device_id;
+        let deviceData = {};
+        let clientData = {};
+        
+        try {
+            console.log('Загружаем данные устройства для ID:', deviceId);
+            const response = await fetch(`/api/devices/${deviceId}`);
+            console.log('Ответ API:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                console.error('Ошибка API:', response.status, response.statusText);
+                return;
+            }
+            
+            const deviceResponse = await response.json();
+            console.log('Данные устройства:', deviceResponse);
+            
+            // API возвращает данные устройства напрямую, а не в формате {success: true, device: {...}}
+            if (deviceResponse && deviceResponse.id) {
+                deviceData = deviceResponse;
+                clientData = deviceData.client || {};
+                console.log('Данные устройства получены:', deviceData);
+                console.log('Данные клиента получены:', clientData);
+            } else {
+                console.error('API вернул некорректные данные:', deviceResponse);
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки данных устройства:', error);
+        }
+        
+        // Формируем данные для печати
+        const printData = {
+            deviceId: deviceId,
+            clientName: clientData.name || 'Не указан',
+            clientPhone: clientData.phone || 'Не указан',
+            clientAddress: clientData.address || 'Не указан',
+            clientEmail: clientData.email || 'Не указан',
+            deviceInfo: `${deviceData.brand || ''} ${deviceData.model || ''}`.trim(),
+            serialNumber: deviceData.serial_number || 'Не указан',
+            workStartDate: reportData.work_start_date,
+            workEndDate: reportData.work_end_date,
+            workDescription: reportData.work_description,
+            totalCost: reportData.total_cost,
+            warrantyPeriod: reportData.warranty_period,
+            notes: reportData.notes,
+            parts: reportData.parts,
+            services: reportData.services
+        };
+        
+        // Генерируем HTML для печати
+        const printHTML = await generateWorkReportPrintHTML(printData);
+        
+        // Создаем новое окно для печати
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
+        printWindow.document.write(printHTML);
+        printWindow.document.close();
+        
+        // Ждем загрузки и печатаем
+        printWindow.onload = function() {
+            printWindow.print();
+        };
+        
+    } catch (error) {
+        console.error('Ошибка при печати АВР:', error);
+        showNotification('Ошибка', 'Не удалось распечатать АВР', 'error');
+    }
+}
+
+// Печать акта выполненных работ
+async function printWorkReport() {
+    // Собираем данные формы
+    const formData = collectWorkReportData();
+    
+    // Генерируем HTML для печати
+    const printHTML = await generateWorkReportPrintHTML(formData);
+    
+    // Создаем новое окно для печати
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+    
+    // Ждем загрузки и печатаем
+    printWindow.onload = function() {
+        printWindow.print();
+        
+        // Закрываем окно после печати
+        printWindow.onafterprint = function() {
+            printWindow.close();
+        };
+        
+        // Fallback для браузеров без поддержки onafterprint
+        setTimeout(() => {
+            if (!printWindow.closed) {
+                printWindow.close();
+            }
+        }, 2000);
+    };
+}
+
+// Сбор данных формы акта выполненных работ
+function collectWorkReportData() {
+    // Получаем данные из глобальной переменной deviceData
+    const deviceData = window.currentWorkReportDeviceData || {};
+    const clientData = deviceData.client || {};
+    
+    return {
+        deviceId: document.getElementById('workReportDeviceId').value,
+        clientName: clientData.name || 'Не указан',
+        clientPhone: clientData.phone || 'Не указан',
+        clientAddress: clientData.address || 'Не указан',
+        clientEmail: clientData.email || 'Не указан',
+        deviceInfo: `${deviceData.brand || ''} ${deviceData.model || ''}`.trim(),
+        serialNumber: deviceData.serial_number || 'Не указан',
+        workStartDate: new Date().toISOString().split('T')[0],
+        workEndDate: new Date().toISOString().split('T')[0],
+        workDescription: document.getElementById('workDescription').value,
+        totalCost: document.getElementById('totalWorkCost').value,
+        warrantyPeriod: document.getElementById('warrantyPeriod').value,
+        notes: document.getElementById('workNotes').value,
+        parts: getWorkReportParts(),
+        services: getWorkReportServices()
+    };
+}
+
+// Получение списка запчастей
+function getWorkReportParts() {
+    const parts = [];
+    const partsItems = document.querySelectorAll('#workReportPartsList .border');
+    partsItems.forEach(item => {
+        try {
+            // Ищем название запчасти
+            const nameElement = item.querySelector('strong');
+            const name = nameElement ? nameElement.textContent : 'Неизвестная запчасть';
+            
+            // Ищем поля ввода количества и цены
+            const inputs = item.querySelectorAll('input[type="number"]');
+            if (inputs.length >= 2) {
+                const quantity = parseFloat(inputs[0].value) || 0;
+                const price = parseFloat(inputs[1].value) || 0;
+                const total = quantity * price;
+                
+                parts.push({ name, quantity, price, total });
+            }
+        } catch (error) {
+            console.error('Error processing part item:', error);
+        }
+    });
+    return parts;
+}
+
+// Получение списка услуг
+function getWorkReportServices() {
+    const services = [];
+    const servicesItems = document.querySelectorAll('#workReportServicesList .border');
+    servicesItems.forEach(item => {
+        try {
+            // Ищем название услуги
+            const nameElement = item.querySelector('strong');
+            const name = nameElement ? nameElement.textContent : 'Неизвестная услуга';
+            
+            // Ищем поле ввода цены
+            const priceInput = item.querySelector('input[type="number"]');
+            if (priceInput) {
+                const price = parseFloat(priceInput.value) || 0;
+                services.push({ name, price });
+            } else {
+                // Если нет поля ввода, ищем в тексте
+                const priceText = item.querySelectorAll('strong')[1];
+                if (priceText) {
+                    const price = parseFloat(priceText.textContent.replace(' ₽', '')) || 0;
+                    services.push({ name, price });
+                }
+            }
+        } catch (error) {
+            console.error('Error processing service item:', error);
+        }
+    });
+    return services;
+}
+
+// Генерация HTML для печати акта выполненных работ
+async function generateWorkReportPrintHTML(data) {
+    const currentDate = new Date().toLocaleDateString('ru-RU');
+    const currentTime = new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+    
+    // Получаем данные сервисного центра
+    let serviceData = null;
+    try {
+        const response = await fetch('/settings/api/service-data');
+        const result = await response.json();
+        if (result.success) {
+            serviceData = result.service;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки данных сервиса:', error);
+    }
+    
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Акт выполненных работ №${data.deviceId}</title>
+            <meta charset="utf-8">
+            <style>
+                @page {
+                    size: A4;
+                    margin: 1cm;
+                }
+                
+                body {
+                    font-family: 'Times New Roman', serif;
+                    font-size: 9pt;
+                    line-height: 1.1;
+                    margin: 0;
+                    padding: 5px;
+                    color: #000;
+                    background: white;
+                }
+                
+                .header {
+                    text-align: center;
+                    margin-bottom: 15px;
+                    border-bottom: 1px solid #000;
+                    padding-bottom: 8px;
+                }
+                
+                .header h1 {
+                    font-size: 14pt;
+                    font-weight: bold;
+                    margin: 0 0 5px 0;
+                    text-transform: uppercase;
+                }
+                
+                .header h2 {
+                    font-size: 11pt;
+                    font-weight: bold;
+                    margin: 0;
+                }
+                
+                .document-info {
+                    text-align: right;
+                    margin-bottom: 10px;
+                    font-size: 9pt;
+                }
+                
+                .parties {
+                    margin-bottom: 15px;
+                }
+                
+                .party {
+                    margin-bottom: 8px;
+                }
+                
+                .parties .row {
+                    display: flex;
+                    flex-wrap: nowrap;
+                }
+                
+                .parties .col-6 {
+                    flex: 0 0 50%;
+                    max-width: 50%;
+                    padding-right: 15px;
+                }
+                
+                .parties .col-6:last-child {
+                    padding-right: 0;
+                    padding-left: 15px;
+                }
+                
+                .party-title {
+                    font-weight: bold;
+                    font-size: 10pt;
+                    margin-bottom: 4px;
+                }
+                
+                .party-info {
+                    margin-left: 15px;
+                    font-size: 9pt;
+                }
+                
+                .device-info {
+                    background: #f8f9fa;
+                    padding: 8px;
+                    border: 1px solid #dee2e6;
+                    margin-bottom: 10px;
+                }
+                
+                .device-info h3 {
+                    font-size: 10pt;
+                    font-weight: bold;
+                    margin: 0 0 5px 0;
+                }
+                
+                .device-info .row {
+                    margin-bottom: 5px;
+                }
+                
+                .work-description {
+                    margin: 10px 0;
+                }
+                
+                .work-description h3 {
+                    font-size: 10pt;
+                    font-weight: bold;
+                    margin: 0 0 5px 0;
+                }
+                
+                .work-description p {
+                    margin: 5px 0;
+                    font-size: 11pt;
+                }
+                
+                .parts-services {
+                    margin: 20px 0;
+                }
+                
+                .parts-services h3 {
+                    font-size: 10pt;
+                    font-weight: bold;
+                    margin: 0 0 5px 0;
+                }
+                
+                .parts-table, .services-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 8px;
+                }
+                
+                .parts-table th, .parts-table td,
+                .services-table th, .services-table td {
+                    border: 1px solid #000;
+                    padding: 3px 5px;
+                    text-align: left;
+                    font-size: 9pt;
+                    line-height: 1.1;
+                    white-space: nowrap;
+                }
+                
+                .parts-table td:first-child {
+                    white-space: normal;
+                    max-width: 180px;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                }
+                
+                .parts-table th, .services-table th {
+                    background: #f8f9fa;
+                    font-weight: bold;
+                }
+                
+                .total-section {
+                    margin: 10px 0;
+                    text-align: right;
+                }
+                
+                .total-section h3 {
+                    font-size: 10pt;
+                    font-weight: bold;
+                    margin: 0 0 5px 0;
+                }
+                
+                .signatures {
+                    margin-top: 20px;
+                }
+                
+                .signature-block {
+                    display: inline-block;
+                    width: 45%;
+                    margin: 5px 2.5%;
+                    vertical-align: top;
+                }
+                
+                .signatures .row {
+                    display: flex;
+                    flex-wrap: nowrap;
+                }
+                
+                .signatures .col-6 {
+                    flex: 0 0 50%;
+                    max-width: 50%;
+                    padding-right: 15px;
+                }
+                
+                .signatures .col-6:last-child {
+                    padding-right: 0;
+                    padding-left: 15px;
+                }
+                
+                .signature-line {
+                    border-bottom: 1px solid #000;
+                    height: 20px;
+                    margin: 5px 0;
+                }
+                
+                .footer {
+                    margin-top: 15px;
+                    font-size: 8pt;
+                    color: #666;
+                    text-align: center;
+                }
+                
+                @media print {
+                    body { margin: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Акт выполненных работ</h1>
+                <h2>№ ${data.deviceId} от ${currentDate}</h2>
+            </div>
+            
+            <div class="document-info">
+                <strong>Дата составления:</strong> ${currentDate}<br>
+                <strong>Время:</strong> ${currentTime}
+            </div>
+            
+            <div class="parties">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="party">
+                            <div class="party-title">Исполнитель:</div>
+                            <div class="party-info">
+                                <strong>${serviceData ? serviceData.name : 'Сервисный центр'}</strong><br>
+                                ${serviceData && serviceData.legal_address ? `Юридический адрес: ${serviceData.legal_address}<br>` : ''}
+                                ${serviceData && serviceData.address ? `Фактический адрес: ${serviceData.address}<br>` : ''}
+                                ${serviceData && serviceData.phone ? `Телефон: ${serviceData.phone}<br>` : ''}
+                                ${serviceData && serviceData.email ? `Email: ${serviceData.email}<br>` : ''}
+                                ${serviceData && serviceData.inn ? `ИНН: ${serviceData.inn}<br>` : ''}
+                                ${serviceData && serviceData.ogrn ? `ОГРН: ${serviceData.ogrn}` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="party">
+                            <div class="party-title">Заказчик:</div>
+                            <div class="party-info">
+                                <strong>${data.clientName}</strong><br>
+                                ${data.clientPhone && data.clientPhone !== 'Не указан' ? `Телефон: ${data.clientPhone}<br>` : ''}
+                                ${data.clientAddress && data.clientAddress !== 'Не указан' ? `Адрес: ${data.clientAddress}<br>` : ''}
+                                ${data.clientEmail && data.clientEmail !== 'Не указан' ? `Email: ${data.clientEmail}` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="device-info">
+                <h3>Информация об устройстве</h3>
+                <div class="row">
+                    <div class="col-6"><strong>Устройство:</strong> ${data.deviceInfo}</div>
+                    <div class="col-6"><strong>Серийный номер:</strong> ${data.serialNumber}</div>
+                </div>
+            </div>
+            
+        <div class="work-description">
+            <h3>Выполненные работы</h3>
+            <p><strong>Примечание:</strong> ${data.workDescription || 'Не указано'}</p>
+        </div>
+            
+            ${data.parts.length > 0 ? `
+            <div class="parts-services">
+                <h3>Использованные запчасти</h3>
+                <table class="parts-table">
+                    <thead>
+                        <tr>
+                            <th>Наименование</th>
+                            <th>Количество</th>
+                            <th>Цена за ед.</th>
+                            <th>Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.parts.map(part => `
+                            <tr>
+                                <td>${part.name}</td>
+                                <td>${part.quantity}</td>
+                                <td>${part.price.toFixed(2)} ₽</td>
+                                <td>${part.total.toFixed(2)} ₽</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            ${data.services.length > 0 ? `
+            <div class="parts-services">
+                <h3>Выполненные услуги</h3>
+                <table class="services-table">
+                    <thead>
+                        <tr>
+                            <th>Наименование услуги</th>
+                            <th>Стоимость</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.services.map(service => `
+                            <tr>
+                                <td>${service.name}</td>
+                                <td>${service.price.toFixed(2)} ₽</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            <div class="total-section">
+                <h3>Итоговая стоимость работ: ${parseFloat(data.totalCost).toFixed(2)} ₽</h3>
+                <p><strong>Гарантийный срок:</strong> ${data.warrantyPeriod} дней</p>
+                ${data.notes ? `<p><strong>Примечания:</strong> ${data.notes}</p>` : ''}
+            </div>
+            
+            <div class="signatures">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="signature-block">
+                            <strong>Исполнитель:</strong><br>
+                            <div class="signature-line"></div>
+                            <div style="text-align: center; margin-top: 5px;">
+                                (подпись) / (ФИО)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="signature-block">
+                            <strong>Заказчик:</strong><br>
+                            <div class="signature-line"></div>
+                            <div style="text-align: center; margin-top: 5px;">
+                                (подпись) / (ФИО)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>Акт составлен в двух экземплярах, имеющих одинаковую юридическую силу</p>
+                <p>Дата создания: ${currentDate} ${currentTime}</p>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
+</script>
+{% endblock %}

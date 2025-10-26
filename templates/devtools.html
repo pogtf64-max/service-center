@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}DevTools - Сервисный центр{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/devtools.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="devtools-container">
+    <div class="devtools-header">
+        <div>
+            <h4 style="margin: 0; color: #ffffff;">
+                <i class="bi bi-tools"></i> DevTools
+            </h4>
+        </div>
+        <div class="devtools-tabs">
+            <button class="devtools-tab active" data-tab="overview">Обзор</button>
+            <button class="devtools-tab" data-tab="performance">Производительность</button>
+            <button class="devtools-tab" data-tab="database">База данных</button>
+            <button class="devtools-tab" data-tab="logs">Логи</button>
+            <button class="devtools-tab" data-tab="errors">Ошибки</button>
+        </div>
+        <div class="auto-refresh">
+            <label>
+                <input type="checkbox" id="autoRefresh" checked>
+                Автообновление
+            </label>
+            <button class="refresh-btn" onclick="refreshData()">
+                <i class="bi bi-arrow-clockwise"></i> Обновить
+            </button>
+        </div>
+    </div>
+    
+    <div class="devtools-content">
+        <!-- Обзор -->
+        <div id="overview" class="devtools-panel active">
+            <div class="grid-3">
+                <div class="metric-card">
+                    <div class="metric-title">Статус системы</div>
+                    <div class="metric-value">
+                        <span class="status-indicator status-ok"></span>
+                        Онлайн
+                    </div>
+                    <div class="metric-subtitle" id="systemStatus">Проверка...</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Использование CPU</div>
+                    <div class="metric-value" id="cpuUsage">0%</div>
+                    <div class="metric-subtitle">Процессор</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Использование памяти</div>
+                    <div class="metric-value" id="memoryUsage">0%</div>
+                    <div class="metric-subtitle">RAM</div>
+                </div>
+            </div>
+            
+            <div class="grid-2">
+                <div class="metric-card">
+                    <div class="metric-title">Статистика базы данных</div>
+                    <div id="dbStats">
+                        <div>Пользователи: <span id="userCount">0</span></div>
+                        <div>Клиенты: <span id="clientCount">0</span></div>
+                        <div>Заказы: <span id="orderCount">0</span></div>
+                        <div>Запчасти: <span id="partCount">0</span></div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Информация о приложении</div>
+                    <div id="appInfo">
+                        <div>Режим отладки: <span id="debugMode">-</span></div>
+                        <div>База данных: <span id="dbType">-</span></div>
+                        <div>Время работы: <span id="uptime">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Производительность -->
+        <div id="performance" class="devtools-panel">
+            <div class="grid-2">
+                <div class="metric-card">
+                    <div class="metric-title">Время ответа</div>
+                    <div class="metric-value" id="responseTime">0ms</div>
+                    <div class="metric-subtitle">Среднее время</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Время запроса к БД</div>
+                    <div class="metric-value" id="dbQueryTime">0ms</div>
+                    <div class="metric-subtitle">База данных</div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">Использование ресурсов</div>
+                <div id="resourceUsage">
+                    <div>Память процесса: <span id="processMemory">0 MB</span></div>
+                    <div>CPU процесса: <span id="processCpu">0%</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- База данных -->
+        <div id="database" class="devtools-panel">
+            <div class="grid-2">
+                <div class="metric-card">
+                    <div class="metric-title">Размер базы данных</div>
+                    <div class="metric-value" id="dbSize">0 MB</div>
+                    <div class="metric-subtitle">SQLite</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">Тип базы данных</div>
+                    <div class="metric-value" id="dbEngine">-</div>
+                    <div class="metric-subtitle">Движок</div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">Информация о таблицах</div>
+                <div id="tablesInfo">
+                    <div>Пользователи: <span id="tableUsers">0</span></div>
+                    <div>Клиенты: <span id="tableClients">0</span></div>
+                    <div>Заказы: <span id="tableOrders">0</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Логи -->
+        <div id="logs" class="devtools-panel">
+            <div class="metric-card">
+                <div class="metric-title">Последние заказы</div>
+                <div id="recentOrders">
+                    <div class="log-entry">
+                        <div class="log-timestamp">Загрузка...</div>
+                        <div class="log-message">Получение данных...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">Последние клиенты</div>
+                <div id="recentClients">
+                    <div class="log-entry">
+                        <div class="log-timestamp">Загрузка...</div>
+                        <div class="log-message">Получение данных...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ошибки -->
+        <div id="errors" class="devtools-panel">
+            <div class="metric-card">
+                <div class="metric-title">Ошибки системы</div>
+                <div id="errorList">
+                    <div class="log-entry">
+                        <div class="log-timestamp">Нет ошибок</div>
+                        <div class="log-message">Система работает стабильно</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">Действия</div>
+                <div>
+                    <button class="refresh-btn" onclick="clearCache()">
+                        <i class="bi bi-trash"></i> Очистить кэш
+                    </button>
+                    <button class="refresh-btn" onclick="restartApp()" style="margin-left: 10px;">
+                        <i class="bi bi-arrow-clockwise"></i> Перезапустить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let autoRefreshInterval;
+let currentTab = 'overview';
+
+// Инициализация DevTools
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDevTools();
+    setupTabSwitching();
+    setupAutoRefresh();
+});
+
+function initializeDevTools() {
+    refreshData();
+}
+
+function setupTabSwitching() {
+    const tabs = document.querySelectorAll('.devtools-tab');
+    const panels = document.querySelectorAll('.devtools-panel');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            
+            // Убираем активный класс со всех табов и панелей
+            tabs.forEach(t => t.classList.remove('active'));
+            panels.forEach(p => p.classList.remove('active'));
+            
+            // Добавляем активный класс к выбранному табу и панели
+            this.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Обновляем данные для активной панели
+            refreshData();
+        });
+    });
+}
+
+function setupAutoRefresh() {
+    const autoRefreshCheckbox = document.getElementById('autoRefresh');
+    
+    autoRefreshCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            startAutoRefresh();
+        } else {
+            stopAutoRefresh();
+        }
+    });
+    
+    // Запускаем автообновление по умолчанию
+    startAutoRefresh();
+}
+
+function startAutoRefresh() {
+    stopAutoRefresh(); // Останавливаем предыдущий интервал
+    autoRefreshInterval = setInterval(refreshData, 5000); // Обновляем каждые 5 секунд
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    }
+}
+
+async function refreshData() {
+    try {
+        // Получаем общий статус
+        const statusResponse = await fetch('/devtools/api/status');
+        const statusData = await statusResponse.json();
+        
+        if (statusData.success) {
+            updateStatusData(statusData.data);
+        }
+        
+        // Получаем данные производительности
+        const perfResponse = await fetch('/devtools/api/performance');
+        const perfData = await perfResponse.json();
+        
+        if (perfData.success) {
+            updatePerformanceData(perfData.data);
+        }
+        
+        // Получаем данные базы данных
+        const dbResponse = await fetch('/devtools/api/database');
+        const dbData = await dbResponse.json();
+        
+        if (dbData.success) {
+            updateDatabaseData(dbData.data);
+        }
+        
+        // Получаем логи
+        const logsResponse = await fetch('/devtools/api/logs');
+        const logsData = await logsResponse.json();
+        
+        if (logsData.success) {
+            updateLogsData(logsData.data);
+        }
+        
+        // Получаем ошибки
+        const errorsResponse = await fetch('/devtools/api/errors');
+        const errorsData = await errorsResponse.json();
+        
+        if (errorsData.success) {
+            updateErrorsData(errorsData.data);
+        }
+        
+    } catch (error) {
+        console.error('Ошибка при обновлении данных DevTools:', error);
+        showDevToolsError('Ошибка подключения к серверу');
+    }
+}
+
+function updateStatusData(data) {
+    // Обновляем системную информацию
+    document.getElementById('cpuUsage').textContent = data.system.cpu_percent.toFixed(1) + '%';
+    document.getElementById('memoryUsage').textContent = data.system.memory_percent.toFixed(1) + '%';
+    document.getElementById('systemStatus').textContent = 'Система работает нормально';
+    
+    // Обновляем статистику базы данных
+    document.getElementById('userCount').textContent = data.database.users;
+    document.getElementById('clientCount').textContent = data.database.clients;
+    document.getElementById('orderCount').textContent = data.database.orders;
+    document.getElementById('partCount').textContent = data.database.parts;
+    
+    // Обновляем информацию о приложении
+    document.getElementById('debugMode').textContent = data.app.debug_mode ? 'Включен' : 'Выключен';
+    document.getElementById('dbType').textContent = data.app.config.SQLALCHEMY_DATABASE_URI.split('://')[0];
+    document.getElementById('uptime').textContent = formatUptime(data.system.uptime);
+}
+
+function updatePerformanceData(data) {
+    document.getElementById('responseTime').textContent = (data.response_time * 1000).toFixed(2) + 'ms';
+    document.getElementById('dbQueryTime').textContent = (data.db_query_time * 1000).toFixed(2) + 'ms';
+    document.getElementById('processMemory').textContent = data.memory_usage.toFixed(2) + ' MB';
+    document.getElementById('processCpu').textContent = data.cpu_usage.toFixed(1) + '%';
+}
+
+function updateDatabaseData(data) {
+    document.getElementById('dbSize').textContent = data.size_mb.toFixed(2) + ' MB';
+    document.getElementById('dbEngine').textContent = data.connection_info.engine;
+    document.getElementById('tableUsers').textContent = data.tables.users.count;
+    document.getElementById('tableClients').textContent = data.tables.clients.count;
+    document.getElementById('tableOrders').textContent = data.tables.orders.count;
+}
+
+function updateLogsData(data) {
+    // Обновляем последние заказы
+    const recentOrdersContainer = document.getElementById('recentOrders');
+    recentOrdersContainer.innerHTML = '';
+    
+    data.recent_orders.forEach(order => {
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        logEntry.innerHTML = `
+            <div class="log-timestamp">${formatDate(order.created_at)}</div>
+            <div class="log-message">Заказ #${order.id}: ${order.client_name} - ${order.device} (${order.status})</div>
+        `;
+        recentOrdersContainer.appendChild(logEntry);
+    });
+    
+    // Обновляем последних клиентов
+    const recentClientsContainer = document.getElementById('recentClients');
+    recentClientsContainer.innerHTML = '';
+    
+    data.recent_clients.forEach(client => {
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        logEntry.innerHTML = `
+            <div class="log-timestamp">${formatDate(client.created_at)}</div>
+            <div class="log-message">Клиент: ${client.name} (${client.phone})</div>
+        `;
+        recentClientsContainer.appendChild(logEntry);
+    });
+}
+
+function updateErrorsData(data) {
+    const errorList = document.getElementById('errorList');
+    errorList.innerHTML = '';
+    
+    if (data.errors.length === 0) {
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        logEntry.innerHTML = `
+            <div class="log-timestamp">Нет ошибок</div>
+            <div class="log-message">Система работает стабильно</div>
+        `;
+        errorList.appendChild(logEntry);
+    } else {
+        data.errors.forEach(error => {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <div class="log-timestamp">${formatDate(error.timestamp)}</div>
+                <div class="log-message">${error.message}</div>
+            `;
+            errorList.appendChild(logEntry);
+        });
+    }
+}
+
+function showDevToolsError(message) {
+    // Показываем ошибку в DevTools
+    console.error('DevTools Error:', message);
+}
+
+function formatUptime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}ч ${minutes}м`;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString('ru-RU');
+}
+
+async function clearCache() {
+    try {
+        const response = await fetch('/devtools/api/clear-cache');
+        const data = await response.json();
+        
+        if (data.success) {
+            showDevToolsError('Кэш очищен');
+        } else {
+            showDevToolsError('Ошибка при очистке кэша: ' + data.error);
+        }
+    } catch (error) {
+        showDevToolsError('Ошибка при очистке кэша: ' + error.message);
+    }
+}
+
+async function restartApp() {
+    if (!confirm('Вы уверены, что хотите перезапустить приложение?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/devtools/api/restart');
+        const data = await response.json();
+        
+        if (data.success) {
+            showDevToolsError('Приложение будет перезапущено');
+        } else {
+            showDevToolsError('Ошибка при перезапуске: ' + data.error);
+        }
+    } catch (error) {
+        showDevToolsError('Ошибка при перезапуске: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

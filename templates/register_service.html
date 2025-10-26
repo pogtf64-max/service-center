@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация сервисного центра{% endblock %}
+
+{% block content %}
+<div class="register-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <div class="register-icon">
+                        <i class="bi bi-building-add"></i>
+                    </div>
+                    <h1 class="register-title">Создание сервисного центра</h1>
+                    <p class="register-subtitle">Заполните форму для регистрации нового центра</p>
+                </div>
+
+                <!-- Registration Form -->
+                <div class="register-card">
+                    <form method="POST" action="{{ url_for('service.register_service') }}" id="registerForm">
+                        <!-- Service Information -->
+                        <div class="form-section">
+                            <h4 class="section-title">
+                                <i class="bi bi-building"></i>
+                                Информация о сервисе
+                            </h4>
+                            
+                            <div class="mb-3">
+                                <label for="service_name" class="form-label">Название сервиса *</label>
+                                <input type="text" class="form-control" id="service_name" name="service_name" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="service_address" class="form-label">Адрес</label>
+                                <textarea class="form-control" id="service_address" name="service_address" rows="2"></textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="service_phone" class="form-label">Телефон</label>
+                                        <input type="tel" class="form-control" id="service_phone" name="service_phone">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="service_email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="service_email" name="service_email">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="service_password" class="form-label">Пароль сервиса *</label>
+                                <input type="password" class="form-control" id="service_password" name="service_password" required minlength="6">
+                                <div class="form-text">Минимум 6 символов. Этот пароль нужен сотрудникам для присоединения к сервису.</div>
+                            </div>
+                        </div>
+
+                        <!-- Director Information -->
+                        <div class="form-section">
+                            <h4 class="section-title">
+                                <i class="bi bi-person-gear"></i>
+                                Директор сервиса
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="director_name" class="form-label">Полное имя *</label>
+                                        <input type="text" class="form-control" id="director_name" name="director_name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="director_username" class="form-label">Имя пользователя *</label>
+                                        <input type="text" class="form-control" id="director_username" name="director_username" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="director_password" class="form-label">Пароль *</label>
+                                        <input type="password" class="form-control" id="director_password" name="director_password" required minlength="6">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="director_phone" class="form-label">Телефон</label>
+                                        <input type="tel" class="form-control" id="director_phone" name="director_phone">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="director_email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="director_email" name="director_email">
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('auth.index') }}'">
+                                <i class="bi bi-arrow-left"></i>
+                                Назад
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i>
+                                Создать сервис
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Info -->
+                <div class="info-card">
+                    <div class="info-content">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <h5>После создания сервиса:</h5>
+                            <ul>
+                                <li>Вы автоматически станете директором</li>
+                                <li>Сможете управлять сотрудниками</li>
+                                <li>Сотрудники смогут присоединиться по паролю сервиса</li>
+                                <li>Все данные будут синхронизированы в реальном времени</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.register-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1rem 0;
+}
+
+.register-icon {
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.register-title {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.register-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+.register-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    color: #1f2937;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    color: #6366f1;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.info-card {
+    margin-top: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 1rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.info-content {
+    display: flex;
+    align-items: flex-start;
+    color: white;
+}
+
+.info-content i {
+    font-size: 1.2rem;
+    color: #60a5fa;
+    margin-right: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.info-content h5 {
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.info-content ul {
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.info-content li {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+}
+
+/* Улучшенный контраст для текста */
+.form-label {
+    color: #1f2937 !important;
+    font-weight: 600;
+}
+
+.form-text {
+    color: #6b7280 !important;
+    font-size: 0.875rem;
+}
+
+.text-muted {
+    color: #6b7280 !important;
+}
+
+@media (max-width: 768px) {
+    .register-title {
+        font-size: 1.25rem;
+    }
+    
+    .register-card {
+        padding: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+

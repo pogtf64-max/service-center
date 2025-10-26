@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}История кассы{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="bi bi-cash-stack"></i> История кассы
+        </h1>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Назад к панели управления
+        </a>
+    </div>
+
+    <!-- Cash Summary -->
+    <div class="row mb-4">
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Общая касса
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ "%.2f"|format(total_cash) }} ₽</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-cash-stack text-success" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Всего операций
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ cash_entries|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-list-ul text-info" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash History Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-clock-history"></i> История операций с кассой
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if cash_entries %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Описание</th>
+                            <th>Сумма</th>
+                            <th>Тип операции</th>
+                            <th>ФИО</th>
+                            <th>Заказ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in cash_entries %}
+                        <tr>
+                            <td>
+                                <i class="bi bi-calendar3"></i>
+                                {{ entry.created_at.strftime('%d.%m.%Y %H:%M') }}
+                            </td>
+                            <td>{{ entry.description }}</td>
+                            <td>
+                                {% if entry.amount > 0 %}
+                                    <span class="text-success font-weight-bold">
+                                        <i class="bi bi-plus-circle"></i> +{{ "%.2f"|format(entry.amount) }} ₽
+                                    </span>
+                                {% else %}
+                                    <span class="text-danger font-weight-bold">
+                                        <i class="bi bi-dash-circle"></i> {{ "%.2f"|format(entry.amount) }} ₽
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if entry.amount > 0 %}
+                                    <span class="badge bg-success">Поступление</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Расход</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if entry.user %}
+                                    <i class="bi bi-person"></i> {{ entry.user.first_name }} {{ entry.user.last_name }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if entry.order_id %}
+                                    <a href="{{ url_for('archive.index') }}?order_id={{ entry.order_id }}" class="text-primary">
+                                        <i class="bi bi-receipt"></i> Заказ #{{ entry.order_id }}
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <p class="text-muted mt-2">История операций с кассой пуста</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
