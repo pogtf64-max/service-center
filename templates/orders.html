@@ -446,8 +446,6 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
 {% block extra_js %}
 <script>
 function viewOrder(orderId) {
@@ -2315,19 +2313,14 @@ function generateUnrepairableAct(data) {
     </div>
 </div>
 
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='js/orders.js') }}?v=1.0"></script>
-<script>
-// Изменение статуса заказа
-function changeOrderStatus(orderId, currentStatus) {
-    document.getElementById('changeStatusOrderId').value = orderId;
     document.getElementById('changeStatusOldStatus').value = currentStatus;
     document.getElementById('newStatus').value = currentStatus;
     document.getElementById('statusComment').value = '';
     
     new bootstrap.Modal(document.getElementById('changeStatusModal')).show();
+}
+</script>
+{% endblock %}
 }
 </script>
 {% endblock %}
