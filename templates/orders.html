@@ -2315,24 +2315,11 @@ function generateUnrepairableAct(data) {
     </div>
 </div>
 
-<script>
-// Обработчик события для модального окна предварительного просмотра
-document.addEventListener('DOMContentLoaded', function() {
-    const documentPreviewModal = document.getElementById('documentPreviewModal');
-    if (documentPreviewModal) {
-        documentPreviewModal.addEventListener('hidden.bs.modal', function() {
-            // Очищаем содержимое при закрытии модального окна
-            const content = document.getElementById('documentPreviewContent');
-            if (content) {
-                content.innerHTML = '';
-            }
-        });
-    }
-    
-    // Обновляем стоимость всех заказов с учетом АВР
-    updateAllOrdersCost();
-});
+{% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/orders.js') }}?v=1.0"></script>
+<script>
 // Изменение статуса заказа
 function changeOrderStatus(orderId, currentStatus) {
     document.getElementById('changeStatusOrderId').value = orderId;
@@ -2342,6 +2329,8 @@ function changeOrderStatus(orderId, currentStatus) {
     
     new bootstrap.Modal(document.getElementById('changeStatusModal')).show();
 }
+</script>
+{% endblock %}
 
 // Получение суммы диагностики из АВР для заказов с отказом от ремонта
 function getDiagnosisCostFromAVR(orderId) {
