@@ -11,6 +11,7 @@ from models.order_status_history import OrderStatusHistory
 from models.cash_register import CashRegister
 from models.database import db
 from datetime import datetime
+from sqlalchemy.orm import joinedload
 
 orders_bp = Blueprint('orders', __name__)
 
@@ -31,9 +32,13 @@ def index():
     """Страница управления заказами"""
     # Показываем только заказы в определенных статусах (исключаем 'rejected')
     allowed_statuses = ['received', 'requires_approval', 'parts_order', 'parts_ordered', 'ready']
-    orders = Order.query.filter_by(service_id=current_user.service_id)\
-                       .filter(Order.status.in_(allowed_statuses))\
-                       .order_by(Order.created_at.desc()).all()
+    orders = Order.query.options(
+        joinedload(Order.client),
+        joinedload(Order.device),
+        joinedload(Order.master)
+    ).filter_by(service_id=current_user.service_id)\
+     .filter(Order.status.in_(allowed_statuses))\
+     .order_by(Order.created_at.desc()).all()
     
     return render_template('orders.html', orders=orders)
 
