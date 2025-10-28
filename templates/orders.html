@@ -450,6 +450,25 @@
 
 {% block extra_js %}
 <script>
+// Функция показа уведомлений
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    // Автоматически удаляем через 5 секунд
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
 function viewOrder(orderId) {
     console.log('viewOrder called with ID:', orderId);
     // Загружаем данные заказа
@@ -457,7 +476,7 @@ function viewOrder(orderId) {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                customAlert('Ошибка загрузки заказа: ' + data.error, 'Ошибка', 'error');
+                showAlert('Ошибка загрузки заказа: ' + data.error, 'Ошибка', 'error');
                 return;
             }
             
@@ -517,7 +536,7 @@ function viewOrder(orderId) {
         })
         .catch(error => {
             console.error('Ошибка:', error);
-            customAlert('Ошибка загрузки заказа', 'Ошибка', 'error');
+            showAlert('Ошибка загрузки заказа', 'Ошибка', 'error');
         });
 }
 
@@ -528,7 +547,7 @@ function editOrder(orderId) {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                customAlert('Ошибка загрузки заказа: ' + data.error, 'Ошибка', 'error');
+                showAlert('Ошибка загрузки заказа: ' + data.error, 'Ошибка', 'error');
                 return;
             }
             
@@ -554,7 +573,7 @@ function editOrder(orderId) {
         })
         .catch(error => {
             console.error('Ошибка:', error);
-            customAlert('Ошибка загрузки заказа', 'Ошибка', 'error');
+            showAlert('Ошибка загрузки заказа', 'Ошибка', 'error');
         });
 }
 
@@ -565,7 +584,7 @@ function changeStatus(orderId) {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                customAlert('Ошибка загрузки заказа: ' + data.error, 'Ошибка', 'error');
+                showAlert('Ошибка загрузки заказа: ' + data.error, 'Ошибка', 'error');
                 return;
             }
             
@@ -615,7 +634,7 @@ function changeStatus(orderId) {
         })
         .catch(error => {
             console.error('Ошибка:', error);
-            customAlert('Ошибка загрузки заказа', 'Ошибка', 'error');
+            showAlert('Ошибка загрузки заказа', 'Ошибка', 'error');
         });
 }
 
@@ -805,7 +824,7 @@ function saveOrderEdit() {
     
     // Валидация обязательных полей
     if (!orderData.client_name || !orderData.device_type || !orderData.device_brand || !orderData.device_model) {
-        customAlert('Пожалуйста, заполните все обязательные поля', 'Ошибка', 'error');
+        showAlert('Пожалуйста, заполните все обязательные поля', 'Ошибка', 'error');
         return;
     }
     
@@ -819,16 +838,16 @@ function saveOrderEdit() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            customAlert('Заказ успешно обновлен', 'Успех', 'success');
+            showAlert('Заказ успешно обновлен', 'Успех', 'success');
             bootstrap.Modal.getInstance(document.getElementById('editOrderModal')).hide();
             location.reload();
         } else {
-            customAlert('Ошибка: ' + data.message, 'Ошибка', 'error');
+            showAlert('Ошибка: ' + data.message, 'Ошибка', 'error');
         }
     })
     .catch(error => {
         console.error('Ошибка:', error);
-        customAlert('Ошибка сохранения изменений', 'Ошибка', 'error');
+        showAlert('Ошибка сохранения изменений', 'Ошибка', 'error');
     });
 }
 
@@ -839,7 +858,7 @@ function saveStatusChange() {
     const diagnosisCost = document.getElementById('changeStatusDiagnosisCost').value || 500;
     
     if (!newStatus) {
-        customAlert('Пожалуйста, выберите новый статус', 'Ошибка', 'error');
+        showAlert('Пожалуйста, выберите новый статус', 'Ошибка', 'error');
         return;
     }
     
@@ -857,16 +876,16 @@ function saveStatusChange() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            customAlert('Статус успешно изменен', 'Успех', 'success');
+            showAlert('Статус успешно изменен', 'Успех', 'success');
             bootstrap.Modal.getInstance(document.getElementById('changeStatusModal')).hide();
             location.reload();
         } else {
-            customAlert('Ошибка: ' + data.message, 'Ошибка', 'error');
+            showAlert('Ошибка: ' + data.message, 'Ошибка', 'error');
         }
     })
     .catch(error => {
         console.error('Ошибка:', error);
-        customAlert('Ошибка изменения статуса', 'Ошибка', 'error');
+        showAlert('Ошибка изменения статуса', 'Ошибка', 'error');
     });
 }
 
