@@ -501,23 +501,7 @@ function initCashServiceAutocomplete() {
 }
 
 // Order management functions
-function viewOrder(orderId) {
-    console.log('viewOrder called with ID:', orderId);
-    // Загружаем данные заказа
-    fetch(`/api/orders/${orderId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showOrderDetailsModal(data.data);
-            } else {
-                showAlert('Ошибка при загрузке заказа: ' + data.message, 'danger');
-            }
-        })
-        .catch(error => {
-            console.error('Error loading order:', error);
-            showAlert('Ошибка при загрузке заказа: ' + error.message, 'danger');
-        });
-}
+// viewOrder function is defined in orders.html template
 
 function editOrder(orderId) {
     console.log('editOrder called with ID:', orderId);
