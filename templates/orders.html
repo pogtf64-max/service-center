@@ -50,6 +50,9 @@
                             <button class="btn btn-sm btn-secondary-modern btn-modern" onclick="showAcceptanceAct({{ order.id }})" title="Акт приема">
                                 <i class="bi bi-file-earmark-text"></i>
                             </button>
+                            <button class="btn btn-sm btn-success-modern btn-modern" onclick="showOrderHistory({{ order.id }})" title="История статусов">
+                                <i class="bi bi-clock-history"></i>
+                            </button>
                         </div>
                     </div>
                     <div class="card-body py-2">
@@ -634,6 +637,120 @@ function getStatusColor(status) {
         'rejected': 'red'
     };
     return statusColors[status] || 'secondary';
+}
+
+function showOrderHistory(orderId) {
+    // Открываем модальное окно с историей статусов
+    fetch(`/api/orders/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showAlert('Ошибка загрузки данных заказа: ' + data.error, 'danger');
+                return;
+            }
+            
+            // Создаем модальное окно с историей
+            const modalHtml = `
+                <div class="modal fade" id="orderHistoryModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-clock-history"></i> История статусов заказа #${orderId}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="historyContent">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Загрузка...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Удаляем старое модальное окно, если есть
+            const oldModal = document.getElementById('orderHistoryModal');
+            if (oldModal) {
+                oldModal.remove();
+            }
+            
+            // Добавляем новое модальное окно
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Показываем модальное окно
+            const modal = new bootstrap.Modal(document.getElementById('orderHistoryModal'));
+            modal.show();
+            
+            // Загружаем историю статусов
+            loadOrderStatusHistoryInModal(orderId);
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки данных заказа:', error);
+            showAlert('Ошибка загрузки данных заказа', 'danger');
+        });
+}
+
+function loadOrderStatusHistoryInModal(orderId) {
+    fetch(`/api/orders/${orderId}/status-history`)
+        .then(response => response.json())
+        .then(data => {
+            const historyContainer = document.getElementById('historyContent');
+            if (!historyContainer) return;
+            
+            if (data.error) {
+                historyContainer.innerHTML = '<p class="text-danger">Ошибка загрузки истории</p>';
+                return;
+            }
+            
+            if (!data.history || data.history.length === 0) {
+                historyContainer.innerHTML = '<p class="text-muted">Нет изменений статусов</p>';
+                return;
+            }
+            
+            const historyHTML = data.history.map(entry => {
+                const changeDate = new Date(entry.changed_at);
+                const formattedDate = changeDate.toLocaleString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                return `
+                    <div class="history-entry mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="text-primary">${entry.old_status_display || 'Новый'}</strong>
+                                <i class="bi bi-arrow-right mx-2"></i>
+                                <strong class="text-success">${entry.new_status_display}</strong>
+                            </div>
+                            <small class="text-muted">${formattedDate}</small>
+                        </div>
+                        ${entry.comment ? `<div class="mt-2"><em>${entry.comment}</em></div>` : ''}
+                        ${entry.changed_by ? `<div class="mt-1"><small class="text-muted">Изменил: ${entry.changed_by}</small></div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            historyContainer.innerHTML = historyHTML;
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки истории статусов:', error);
+            const historyContainer = document.getElementById('historyContent');
+            if (historyContainer) {
+                historyContainer.innerHTML = '<p class="text-danger">Ошибка загрузки истории</p>';
+            }
+        });
 }
 
 function loadOrderStatusHistory(orderId) {
