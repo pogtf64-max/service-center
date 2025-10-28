@@ -3324,6 +3324,16 @@ function showNotification(title, message, type) {
         }
     }, 5000);
 }
+
+// Экспортируем функции в глобальную область видимости
+window.viewOrder = viewOrder;
+window.editOrder = editOrder;
+window.changeStatus = changeStatus;
+window.changeOrderStatus = changeOrderStatus;
+window.showAcceptanceAct = showAcceptanceAct;
+window.takeToWork = takeToWork;
+window.getStatusColor = getStatusColor;
+window.showAlert = showAlert;
 </script>
 
 {% endblock %}
