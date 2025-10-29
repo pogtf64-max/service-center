@@ -2843,6 +2843,10 @@ async function printWorkReportFromOrder(reportId) {
         }
         
         // Формируем данные для печати
+        console.log('Данные АВР для печати:', foundReport);
+        console.log('Части АВР:', foundReport.parts);
+        console.log('Услуги АВР:', foundReport.services);
+        
         const printData = {
             deviceId: deviceId,
             clientName: clientData.name || 'Не указан',
@@ -2857,8 +2861,8 @@ async function printWorkReportFromOrder(reportId) {
             totalCost: foundReport.total_cost,
             warrantyPeriod: foundReport.warranty_period,
             notes: foundReport.notes,
-            parts: foundReport.parts,
-            services: foundReport.services
+            parts: foundReport.parts || [],
+            services: foundReport.services || []
         };
         
         // Генерируем HTML для печати (используем функцию из devices.html)
@@ -2889,8 +2893,8 @@ async function printWorkReportFromOrder(reportId) {
             };
         }
         
-        // Загружаем данные сервиса
-        let serviceData = {
+        // Создаем данные сервиса (пока используем заглушки)
+        const serviceData = {
             name: 'Сервисный центр',
             legal_address: 'Не указан',
             address: 'Не указан',
@@ -2899,27 +2903,6 @@ async function printWorkReportFromOrder(reportId) {
             inn: 'Не указан',
             ogrn: 'Не указан'
         };
-        
-        try {
-            const serviceResponse = await fetch('/api/service');
-            if (serviceResponse.ok) {
-                const serviceInfo = await serviceResponse.json();
-                if (serviceInfo && serviceInfo.name) {
-                    serviceData = {
-                        name: serviceInfo.name || 'Сервисный центр',
-                        legal_address: serviceInfo.legal_address || 'Не указан',
-                        address: serviceInfo.address || 'Не указан',
-                        phone: serviceInfo.phone || 'Не указан',
-                        email: serviceInfo.email || 'Не указан',
-                        inn: serviceInfo.inn || 'Не указан',
-                        ogrn: serviceInfo.ogrn || 'Не указан'
-                    };
-                    console.log('Загружены данные сервиса:', serviceData);
-                }
-            }
-        } catch (error) {
-            console.error('Ошибка загрузки данных сервиса:', error);
-        }
         
         const printHTML = await generateWorkReportPrintHTML(printData, deviceData, serviceData);
         
@@ -3009,9 +2992,13 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
     // Суммируем стоимость услуг
     if (data.services && Array.isArray(data.services)) {
         data.services.forEach(service => {
+            console.log('Обрабатываем услугу:', service);
             const cost = parseFloat(service.cost) || 0;
             servicesCost += cost;
+            console.log('Стоимость услуги:', cost, 'Общая стоимость услуг:', servicesCost);
         });
+    } else {
+        console.log('Услуги не найдены или не являются массивом:', data.services);
     }
     
     // Общая стоимость = запчасти + услуги
