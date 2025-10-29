@@ -2851,6 +2851,7 @@ async function printWorkReportFromOrder(reportId) {
         };
         
         // Генерируем HTML для печати (используем функцию из devices.html)
+        console.log('Передаем в generateWorkReportPrintHTML:', { printData, deviceData, serviceData: {} });
         const printHTML = await generateWorkReportPrintHTML(printData, deviceData, {});
         
         // Создаем новое окно для печати
