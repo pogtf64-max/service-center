@@ -129,26 +129,86 @@ function initDashboardCharts() {
     console.log('Dashboard charts initialized');
 }
 
-// API Helper functions
+// API Helper with cancellation, timeout and simple GET cache
+const requestState = {
+    activeControllers: new Set(),
+    getCache: new Map(), // key: url, value: { expiresAt: number, data: any }
+};
+
+function abortAllActiveRequests() {
+    requestState.activeControllers.forEach((controller) => {
+        try { controller.abort(); } catch (_) {}
+    });
+    requestState.activeControllers.clear();
+}
+
+// Abort pending requests on navigation/unload to avoid hanging connections
+window.addEventListener('beforeunload', abortAllActiveRequests);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        abortAllActiveRequests();
+    }
+});
+
 async function apiRequest(url, options = {}) {
+    const isGet = !options.method || options.method.toUpperCase() === 'GET';
+    const cacheTtlMs = 15_000; // 15s cache for quick tab switches
+
+    // Serve from cache for GET when available and fresh
+    if (isGet && requestState.getCache.has(url)) {
+        const cached = requestState.getCache.get(url);
+        if (cached && cached.expiresAt > Date.now()) {
+            return cached.data;
+        } else {
+            requestState.getCache.delete(url);
+        }
+    }
+
     const defaultOptions = {
         headers: {
             'Content-Type': 'application/json',
         },
     };
 
-    const mergedOptions = { ...defaultOptions, ...options };
+    const controller = new AbortController();
+    const timeoutMs = options.timeoutMs ?? 20000; // 20s safety timeout
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const mergedOptions = { ...defaultOptions, ...options, signal: controller.signal };
+    requestState.activeControllers.add(controller);
 
     try {
         const response = await fetch(url, mergedOptions);
-        const data = await response.json();
-        
+        clearTimeout(timeoutId);
+        requestState.activeControllers.delete(controller);
+
+        // Try parse JSON safely; when HTML returned, throw clear error
+        const text = await response.text();
+        let data;
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (e) {
+            // Likely received HTML (e.g., redirect page) instead of JSON
+            throw new Error('Неверный формат ответа сервера (ожидался JSON)');
+        }
+
         if (!response.ok) {
             throw new Error(data.message || 'Ошибка сервера');
         }
-        
+
+        if (isGet) {
+            requestState.getCache.set(url, { data, expiresAt: Date.now() + cacheTtlMs });
+        }
+
         return data;
     } catch (error) {
+        clearTimeout(timeoutId);
+        requestState.activeControllers.delete(controller);
+        if (error.name === 'AbortError') {
+            // Тихо игнорируем отмененные запросы при смене вкладки/страницы
+            console.debug('Запрос отменен:', url);
+            throw error; // пробрасываем, если вызывающему нужна обработка
+        }
         console.error('API Error:', error);
         showAlert('Ошибка: ' + error.message, 'danger');
         throw error;
@@ -834,9 +894,10 @@ window.customAlert = customAlert;
 window.customConfirm = customConfirm;
 window.apiRequest = apiRequest;
 window.openDevTools = openDevTools;
-window.viewOrder = viewOrder;
-window.editOrder = editOrder;
-window.changeStatus = changeStatus;
-window.changeOrderStatus = changeOrderStatus;
-window.showAcceptanceAct = showAcceptanceAct;
-window.takeToWork = takeToWork;
+// Export only if functions exist on this page
+// viewOrder is defined in orders.html template, not here
+if (typeof editOrder === 'function') window.editOrder = editOrder;
+if (typeof changeStatus === 'function') window.changeStatus = changeStatus;
+if (typeof changeOrderStatus === 'function') window.changeOrderStatus = changeOrderStatus;
+if (typeof showAcceptanceAct === 'function') window.showAcceptanceAct = showAcceptanceAct;
+if (typeof takeToWork === 'function') window.takeToWork = takeToWork;
