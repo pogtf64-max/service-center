@@ -2893,8 +2893,8 @@ async function printWorkReportFromOrder(reportId) {
             };
         }
         
-        // Создаем данные сервиса (пока используем заглушки)
-        const serviceData = {
+        // Загружаем данные сервиса
+        let serviceData = {
             name: 'Сервисный центр',
             legal_address: 'Не указан',
             address: 'Не указан',
@@ -2903,6 +2903,28 @@ async function printWorkReportFromOrder(reportId) {
             inn: 'Не указан',
             ogrn: 'Не указан'
         };
+        
+        try {
+            const serviceResponse = await fetch('/settings/api/service-data');
+            if (serviceResponse.ok) {
+                const serviceInfo = await serviceResponse.json();
+                if (serviceInfo && serviceInfo.success && serviceInfo.service) {
+                    const service = serviceInfo.service;
+                    serviceData = {
+                        name: service.name || 'Сервисный центр',
+                        legal_address: service.legal_address || 'Не указан',
+                        address: service.address || 'Не указан',
+                        phone: service.phone || 'Не указан',
+                        email: service.email || 'Не указан',
+                        inn: service.inn || 'Не указан',
+                        ogrn: service.ogrn || 'Не указан'
+                    };
+                    console.log('Загружены данные сервиса:', serviceData);
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки данных сервиса:', error);
+        }
         
         const printHTML = await generateWorkReportPrintHTML(printData, deviceData, serviceData);
         
