@@ -114,6 +114,16 @@ def join_service():
             flash('Пользователь уже зарегистрирован в этом сервисе', 'error')
             return render_template('join_service.html')
         
+        # Проверка уникальности email (если email не пустой)
+        if email and email.strip():
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_email:
+                flash('Пользователь с таким email уже существует', 'error')
+                return render_template('join_service.html')
+        else:
+            # Если email пустой, устанавливаем None вместо пустой строки
+            email = None
+        
         # Создание пользователя (не подтвержденного)
         user = User(
             username=username,
