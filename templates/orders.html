@@ -2889,8 +2889,8 @@ async function printWorkReportFromOrder(reportId) {
             };
         }
         
-        // Создаем данные сервиса
-        const serviceData = {
+        // Загружаем данные сервиса
+        let serviceData = {
             name: 'Сервисный центр',
             legal_address: 'Не указан',
             address: 'Не указан',
@@ -2899,6 +2899,27 @@ async function printWorkReportFromOrder(reportId) {
             inn: 'Не указан',
             ogrn: 'Не указан'
         };
+        
+        try {
+            const serviceResponse = await fetch('/api/service');
+            if (serviceResponse.ok) {
+                const serviceInfo = await serviceResponse.json();
+                if (serviceInfo && serviceInfo.name) {
+                    serviceData = {
+                        name: serviceInfo.name || 'Сервисный центр',
+                        legal_address: serviceInfo.legal_address || 'Не указан',
+                        address: serviceInfo.address || 'Не указан',
+                        phone: serviceInfo.phone || 'Не указан',
+                        email: serviceInfo.email || 'Не указан',
+                        inn: serviceInfo.inn || 'Не указан',
+                        ogrn: serviceInfo.ogrn || 'Не указан'
+                    };
+                    console.log('Загружены данные сервиса:', serviceData);
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки данных сервиса:', error);
+        }
         
         const printHTML = await generateWorkReportPrintHTML(printData, deviceData, serviceData);
         
@@ -2973,13 +2994,15 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
     
     // Рассчитываем итоговую стоимость
     let totalCost = 0;
+    let partsCost = 0;
+    let servicesCost = 0;
     
     // Суммируем стоимость запчастей
     if (data.parts && Array.isArray(data.parts)) {
         data.parts.forEach(part => {
             const quantity = parseFloat(part.quantity) || 0;
             const price = parseFloat(part.price) || 0;
-            totalCost += quantity * price;
+            partsCost += quantity * price;
         });
     }
     
@@ -2987,14 +3010,19 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
     if (data.services && Array.isArray(data.services)) {
         data.services.forEach(service => {
             const cost = parseFloat(service.cost) || 0;
-            totalCost += cost;
+            servicesCost += cost;
         });
     }
     
-    // Если есть total_cost в reportData, используем его
-    if (reportData.total_cost && parseFloat(reportData.total_cost) > 0) {
+    // Общая стоимость = запчасти + услуги
+    totalCost = partsCost + servicesCost;
+    
+    // Если есть total_cost в reportData и он больше рассчитанного, используем его
+    if (reportData.total_cost && parseFloat(reportData.total_cost) > totalCost) {
         totalCost = parseFloat(reportData.total_cost);
     }
+    
+    console.log('Расчет стоимости:', { partsCost, servicesCost, totalCost, reportDataTotalCost: reportData.total_cost });
     
     data.totalCost = totalCost;
     
