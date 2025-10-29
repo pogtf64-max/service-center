@@ -3258,10 +3258,10 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
                         <div class="party">
                             <div class="party-title">Заказчик:</div>
                             <div class="party-info">
-                                <strong>${data.clientName}</strong><br>
-                                ${data.clientPhone && data.clientPhone !== 'Не указан' ? `Телефон: ${data.clientPhone}<br>` : ''}
-                                ${data.clientAddress && data.clientAddress !== 'Не указан' ? `Адрес: ${data.clientAddress}<br>` : ''}
-                                ${data.clientEmail && data.clientEmail !== 'Не указан' ? `Email: ${data.clientEmail}` : ''}
+                                <strong>${reportData.clientName}</strong><br>
+                                ${reportData.clientPhone && reportData.clientPhone !== 'Не указан' ? `Телефон: ${reportData.clientPhone}<br>` : ''}
+                                ${reportData.clientAddress && reportData.clientAddress !== 'Не указан' ? `Адрес: ${reportData.clientAddress}<br>` : ''}
+                                ${reportData.clientEmail && reportData.clientEmail !== 'Не указан' ? `Email: ${reportData.clientEmail}` : ''}
                             </div>
                         </div>
                     </div>
@@ -3271,17 +3271,17 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
             <div class="device-info">
                 <h3>Информация об устройстве</h3>
                 <div class="row">
-                    <div class="col-6"><strong>Устройство:</strong> ${data.deviceInfo}</div>
-                    <div class="col-6"><strong>Серийный номер:</strong> ${data.serialNumber}</div>
+                    <div class="col-6"><strong>Устройство:</strong> ${reportData.deviceInfo}</div>
+                    <div class="col-6"><strong>Серийный номер:</strong> ${reportData.serialNumber}</div>
                 </div>
             </div>
             
             <div class="work-description">
                 <h3>Выполненные работы</h3>
-                <p><strong>Примечание:</strong> ${data.workDescription || 'Не указано'}</p>
+                <p><strong>Примечание:</strong> ${reportData.workDescription || 'Не указано'}</p>
             </div>
             
-            ${data.parts && data.parts.length > 0 ? `
+            ${reportData.parts && reportData.parts.length > 0 ? `
             <div class="parts-services">
                 <h3>Использованные запчасти</h3>
                 <table class="parts-table">
@@ -3294,7 +3294,7 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
                         </tr>
                     </thead>
                     <tbody>
-                        ${data.parts.map(part => `
+                        ${reportData.parts.map(part => `
                             <tr>
                                 <td>${part.name}</td>
                                 <td>${part.quantity}</td>
@@ -3307,7 +3307,7 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
             </div>
             ` : ''}
             
-            ${data.services && data.services.length > 0 ? `
+            ${reportData.services && reportData.services.length > 0 ? `
             <div class="parts-services">
                 <h3>Выполненные услуги</h3>
                 <table class="services-table">
@@ -3318,7 +3318,7 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
                         </tr>
                     </thead>
                     <tbody>
-                        ${data.services.map(service => `
+                        ${reportData.services.map(service => `
                             <tr>
                                 <td>${service.name}</td>
                                 <td>${service.price.toFixed(2)} ₽</td>
@@ -3330,8 +3330,8 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
             ` : ''}
             
             <div class="total-section">
-                <h3>Итоговая стоимость работ: ${data.totalCost} ₽</h3>
-                <p><strong>Гарантийный срок:</strong> ${data.warrantyPeriod || '30'} дней</p>
+                <h3>Итоговая стоимость работ: ${reportData.totalCost} ₽</h3>
+                <p><strong>Гарантийный срок:</strong> ${reportData.warrantyPeriod || '30'} дней</p>
             </div>
             
             <div class="signatures">
