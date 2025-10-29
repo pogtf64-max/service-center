@@ -2846,6 +2846,8 @@ async function printWorkReportFromOrder(reportId) {
         console.log('Данные АВР для печати:', foundReport);
         console.log('Части АВР:', foundReport.parts);
         console.log('Услуги АВР:', foundReport.services);
+        console.log('work_description:', foundReport.work_description);
+        console.log('notes:', foundReport.notes);
         
         const printData = {
             deviceId: deviceId,
@@ -2977,6 +2979,8 @@ function deleteWorkReportFromOrder(reportId, orderId) {
 // Функция генерации HTML для печати АВР (копия из devices.html)
 async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) {
     console.log('generateWorkReportPrintHTML called with:', { reportData, deviceData, serviceData });
+    console.log('reportData.workDescription:', reportData.workDescription);
+    console.log('reportData.notes:', reportData.notes);
     
     const currentDate = new Date().toLocaleDateString('ru-RU');
     const currentTime = new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
