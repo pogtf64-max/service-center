@@ -2993,7 +2993,8 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
     if (data.services && Array.isArray(data.services)) {
         data.services.forEach(service => {
             console.log('Обрабатываем услугу:', service);
-            const cost = parseFloat(service.cost) || 0;
+            // Пробуем разные поля для стоимости услуги
+            const cost = parseFloat(service.cost || service.price || service.amount || 0) || 0;
             servicesCost += cost;
             console.log('Стоимость услуги:', cost, 'Общая стоимость услуг:', servicesCost);
         });
