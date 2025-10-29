@@ -2863,6 +2863,23 @@ async function printWorkReportFromOrder(reportId) {
         
         // Генерируем HTML для печати (используем функцию из devices.html)
         console.log('Передаем в generateWorkReportPrintHTML:', { printData, deviceData, serviceData: {} });
+        
+        // Убеждаемся, что deviceData не undefined
+        if (!deviceData) {
+            console.error('deviceData is undefined, creating fallback');
+            deviceData = {
+                brand: 'Не указан',
+                model: 'Не указан',
+                serial_number: 'Не указан',
+                client: {
+                    name: printData.clientName || 'Не указан',
+                    phone: printData.clientPhone || 'Не указан',
+                    address: printData.clientAddress || 'Не указан',
+                    email: printData.clientEmail || 'Не указан'
+                }
+            };
+        }
+        
         const printHTML = await generateWorkReportPrintHTML(printData, deviceData, {});
         
         // Создаем новое окно для печати
