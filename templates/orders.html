@@ -533,6 +533,17 @@ function viewOrder(orderId) {
             
             // Загружаем историю статусов
             loadOrderStatusHistory(orderId);
+            
+            // Добавляем кнопки АВР в футер модального окна
+            const modalFooter = document.querySelector('#orderDetailModal .modal-footer');
+            if (modalFooter) {
+                modalFooter.innerHTML = `
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" onclick="showAcceptanceAct(${orderId})" title="Акт приема">
+                        <i class="bi bi-file-earmark-text"></i> Акт приема
+                    </button>
+                `;
+            }
         })
         .catch(error => {
             console.error('Ошибка:', error);
