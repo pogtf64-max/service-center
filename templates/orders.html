@@ -450,6 +450,11 @@
 
 {% block extra_js %}
 <script>
+// Проверка версии JavaScript
+console.log('Orders page loaded, JavaScript version: v4.5');
+console.log('Current timestamp:', new Date().toISOString());
+</script>
+<script>
 // Функция показа уведомлений
 function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
