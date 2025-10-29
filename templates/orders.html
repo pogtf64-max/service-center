@@ -541,6 +541,7 @@ function viewOrder(orderId) {
             
             // Добавляем кнопки АВР в футер модального окна
             const modalFooter = document.querySelector('#orderDetailModal .modal-footer');
+            console.log('modalFooter found:', modalFooter);
             if (modalFooter) {
                 modalFooter.innerHTML = `
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
@@ -548,6 +549,9 @@ function viewOrder(orderId) {
                         <i class="bi bi-file-earmark-text"></i> Акт приема
                     </button>
                 `;
+                console.log('Кнопка АВР добавлена в модальное окно');
+            } else {
+                console.error('modalFooter не найден!');
             }
         })
         .catch(error => {
@@ -1268,6 +1272,7 @@ function confirmTakeToWork() {
 
 // Показать акт приема
 function showAcceptanceAct(orderId) {
+    console.log('showAcceptanceAct called with orderId:', orderId);
     currentPrintOrderId = orderId;
     
     // Показываем модальное окно предварительного просмотра
