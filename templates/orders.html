@@ -2901,18 +2901,20 @@ function deleteWorkReportFromOrder(reportId, orderId) {
 
 // Функция генерации HTML для печати АВР (копия из devices.html)
 async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) {
+    console.log('generateWorkReportPrintHTML called with:', { reportData, deviceData, serviceData });
+    
     const currentDate = new Date().toLocaleDateString('ru-RU');
     const currentTime = new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
     
     // Извлекаем данные из переданных параметров
     const data = {
-        deviceId: reportData.id,
-        clientName: deviceData.client ? deviceData.client.name : 'Не указан',
-        clientPhone: deviceData.client ? deviceData.client.phone : 'Не указан',
-        clientAddress: deviceData.client ? deviceData.client.address : 'Не указан',
-        clientEmail: deviceData.client ? deviceData.client.email : 'Не указан',
-        deviceInfo: `${deviceData.brand} ${deviceData.model}`,
-        serialNumber: deviceData.serial_number || 'Не указан',
+        deviceId: reportData.id || reportData.deviceId,
+        clientName: (deviceData && deviceData.client && deviceData.client.name) ? deviceData.client.name : 'Не указан',
+        clientPhone: (deviceData && deviceData.client && deviceData.client.phone) ? deviceData.client.phone : 'Не указан',
+        clientAddress: (deviceData && deviceData.client && deviceData.client.address) ? deviceData.client.address : 'Не указан',
+        clientEmail: (deviceData && deviceData.client && deviceData.client.email) ? deviceData.client.email : 'Не указан',
+        deviceInfo: (deviceData && deviceData.brand && deviceData.model) ? `${deviceData.brand} ${deviceData.model}` : 'Не указано',
+        serialNumber: (deviceData && deviceData.serial_number) ? deviceData.serial_number : 'Не указан',
         workDescription: reportData.work_description || 'Не указано',
         parts: reportData.parts || [],
         services: reportData.services || [],
