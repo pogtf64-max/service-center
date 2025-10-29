@@ -2889,7 +2889,18 @@ async function printWorkReportFromOrder(reportId) {
             };
         }
         
-        const printHTML = await generateWorkReportPrintHTML(printData, deviceData, {});
+        // Создаем данные сервиса
+        const serviceData = {
+            name: 'Сервисный центр',
+            legal_address: 'Не указан',
+            address: 'Не указан',
+            phone: 'Не указан',
+            email: 'Не указан',
+            inn: 'Не указан',
+            ogrn: 'Не указан'
+        };
+        
+        const printHTML = await generateWorkReportPrintHTML(printData, deviceData, serviceData);
         
         // Создаем новое окно для печати
         const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -2956,9 +2967,36 @@ async function generateWorkReportPrintHTML(reportData, deviceData, serviceData) 
         workDescription: reportData.work_description || 'Не указано',
         parts: reportData.parts || [],
         services: reportData.services || [],
-        totalCost: reportData.total_cost || 0,
+        totalCost: 0, // Будем рассчитывать ниже
         warrantyPeriod: reportData.warranty_period || '30'
     };
+    
+    // Рассчитываем итоговую стоимость
+    let totalCost = 0;
+    
+    // Суммируем стоимость запчастей
+    if (data.parts && Array.isArray(data.parts)) {
+        data.parts.forEach(part => {
+            const quantity = parseFloat(part.quantity) || 0;
+            const price = parseFloat(part.price) || 0;
+            totalCost += quantity * price;
+        });
+    }
+    
+    // Суммируем стоимость услуг
+    if (data.services && Array.isArray(data.services)) {
+        data.services.forEach(service => {
+            const cost = parseFloat(service.cost) || 0;
+            totalCost += cost;
+        });
+    }
+    
+    // Если есть total_cost в reportData, используем его
+    if (reportData.total_cost && parseFloat(reportData.total_cost) > 0) {
+        totalCost = parseFloat(reportData.total_cost);
+    }
+    
+    data.totalCost = totalCost;
     
     return `
         <!DOCTYPE html>
