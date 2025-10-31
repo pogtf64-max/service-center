@@ -9,5 +9,6 @@ from .device import Device
 from .order import Order
 from .part import Part
 from .cash_register import CashRegister
+from .work_report import WorkReport
 
-__all__ = ['db', 'Service', 'User', 'Client', 'Device', 'Order', 'Part', 'CashRegister']
+__all__ = ['db', 'Service', 'User', 'Client', 'Device', 'Order', 'Part', 'CashRegister', 'WorkReport']

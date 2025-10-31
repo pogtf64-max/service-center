@@ -9,6 +9,7 @@ from models.device import Device
 from models.user import User
 from models.order_status_history import OrderStatusHistory
 from models.cash_register import CashRegister
+from models.work_report import WorkReport
 from models.database import db
 from datetime import datetime
 from sqlalchemy.orm import joinedload
@@ -428,3 +429,128 @@ def save_diagnosis_cost(order_id):
         'message': 'Сумма диагностики успешно сохранена',
         'diagnosis_cost': order.diagnosis_cost
     })
+
+@orders_bp.route('/api/work-reports', methods=['POST'])
+@login_required
+def save_work_report():
+    """API для сохранения акта выполненных работ (АВР)"""
+    try:
+        data = request.get_json()
+        
+        # Получаем обязательные поля
+        device_id = data.get('device_id')
+        if not device_id:
+            return jsonify({'success': False, 'error': 'device_id обязателен'}), 400
+        
+        # Проверяем, что устройство существует и принадлежит сервису пользователя
+        device = Device.query.filter_by(id=device_id, service_id=current_user.service_id).first()
+        if not device:
+            return jsonify({'success': False, 'error': 'Устройство не найдено'}), 404
+        
+        # Создаем новый АВР
+        work_report = WorkReport(
+            order_id=data.get('order_id'),
+            device_id=device_id,
+            user_id=current_user.id,
+            work_start_date=datetime.strptime(data.get('work_start_date'), '%Y-%m-%d').date() if data.get('work_start_date') else datetime.utcnow().date(),
+            work_end_date=datetime.strptime(data.get('work_end_date'), '%Y-%m-%d').date() if data.get('work_end_date') else datetime.utcnow().date(),
+            work_description=data.get('work_description', ''),
+            notes=data.get('notes', ''),
+            total_cost=float(data.get('total_cost', 0)),
+            warranty_period=int(data.get('warranty_period', 30))
+        )
+        
+        # Сохраняем запчасти и услуги
+        work_report.set_parts(data.get('parts', []))
+        work_report.set_services(data.get('services', []))
+        
+        db.session.add(work_report)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Акт выполненных работ успешно сохранен',
+            'work_report': work_report.to_dict()
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@orders_bp.route('/api/work-reports/order/<int:order_id>', methods=['GET'])
+@login_required
+def get_work_reports_by_order(order_id):
+    """API для получения всех АВР для заказа"""
+    try:
+        # Проверяем, что заказ существует и принадлежит сервису пользователя
+        order = Order.query.filter_by(id=order_id, service_id=current_user.service_id).first()
+        if not order:
+            return jsonify({'success': False, 'error': 'Заказ не найден'}), 404
+        
+        # Получаем все АВР для устройства этого заказа
+        work_reports = WorkReport.query.filter_by(device_id=order.device_id)\
+                                      .order_by(WorkReport.created_at.desc()).all()
+        
+        return jsonify({
+            'success': True,
+            'work_reports': [wr.to_dict() for wr in work_reports]
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@orders_bp.route('/api/work-reports/device/<int:device_id>', methods=['GET'])
+@login_required
+def get_work_reports_by_device(device_id):
+    """API для получения всех АВР для устройства"""
+    try:
+        # Проверяем, что устройство существует и принадлежит сервису пользователя
+        device = Device.query.filter_by(id=device_id, service_id=current_user.service_id).first()
+        if not device:
+            return jsonify({'success': False, 'error': 'Устройство не найдено'}), 404
+        
+        # Получаем все АВР для устройства
+        work_reports = WorkReport.query.filter_by(device_id=device_id)\
+                                      .order_by(WorkReport.created_at.desc()).all()
+        
+        return jsonify({
+            'success': True,
+            'work_reports': [wr.to_dict() for wr in work_reports]
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@orders_bp.route('/api/work-reports/<int:report_id>', methods=['GET', 'DELETE'])
+@login_required
+def work_report_by_id(report_id):
+    """API для получения или удаления конкретного АВР по ID"""
+    try:
+        # Получаем АВР
+        work_report = WorkReport.query.get(report_id)
+        if not work_report:
+            return jsonify({'success': False, 'error': 'АВР не найден'}), 404
+        
+        # Проверяем, что устройство принадлежит сервису пользователя
+        device = Device.query.filter_by(id=work_report.device_id, service_id=current_user.service_id).first()
+        if not device:
+            return jsonify({'success': False, 'error': 'Доступ запрещен'}), 403
+        
+        if request.method == 'DELETE':
+            # Удаляем АВР
+            db.session.delete(work_report)
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'message': 'АВР успешно удален'
+            })
+        
+        # GET - возвращаем АВР
+        return jsonify({
+            'success': True,
+            'work_report': work_report.to_dict()
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500

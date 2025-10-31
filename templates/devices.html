@@ -2513,38 +2513,76 @@ function saveWorkReport() {
             }
         });
         
-        // Сохраняем в localStorage для демонстрации
+        // Сохраняем в базу данных через API
         const deviceId = workReportData.device_id;
-        const existingReports = JSON.parse(localStorage.getItem('workReports') || '{}');
-        if (!existingReports[deviceId]) {
-            existingReports[deviceId] = [];
-        }
-        existingReports[deviceId].push({
-            ...workReportData,
-            id: Date.now(),
-            created_at: new Date().toISOString()
-        });
-        localStorage.setItem('workReports', JSON.stringify(existingReports));
         
-        console.log('Данные акта выполненных работ:', workReportData);
-        showNotification('Успех', 'Акт выполненных работ сохранен', 'success');
+        // Подготавливаем данные для отправки на сервер
+        const apiData = {
+            device_id: deviceId,
+            order_id: workReportData.order_id || null,
+            work_start_date: workReportData.work_start_date,
+            work_end_date: workReportData.work_end_date,
+            work_description: workReportData.work_description,
+            notes: workReportData.notes,
+            total_cost: parseFloat(workReportData.total_cost) || 0,
+            warranty_period: parseInt(workReportData.warranty_period) || 30,
+            parts: workReportData.parts || [],
+            services: workReportData.services || []
+        };
         
-        // Закрываем модальное окно
-        const modal = document.getElementById('workReportModal');
-        if (modal) {
-            const bsModal = bootstrap.Modal.getInstance(modal);
-            if (bsModal) {
-                bsModal.hide();
+        // Отправляем на сервер
+        fetch('/api/work-reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(apiData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Акт выполненных работ сохранен в БД:', data.work_report);
+                showNotification('Успех', 'Акт выполненных работ сохранен', 'success');
+                
+                // Также сохраняем в localStorage для обратной совместимости (если нужно)
+                // Это можно удалить позже, когда все АВР будут в БД
+                try {
+                    const existingReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+                    if (!existingReports[deviceId]) {
+                        existingReports[deviceId] = [];
+                    }
+                    existingReports[deviceId].push(data.work_report);
+                    localStorage.setItem('workReports', JSON.stringify(existingReports));
+                } catch (e) {
+                    console.warn('Не удалось сохранить в localStorage для обратной совместимости:', e);
+                }
+            } else {
+                throw new Error(data.error || 'Неизвестная ошибка');
             }
-        }
-        
-        // Обновляем отображение АВР в карточке устройства
-        updateDeviceWorkReports(deviceId);
-        
-        // Обновляем стоимость заказов, если мы на странице заказов
-        if (typeof updateAllOrdersCost === 'function') {
-            updateAllOrdersCost();
-        }
+        })
+        .then(() => {
+            // Закрываем модальное окно только после успешного сохранения
+            const modal = document.getElementById('workReportModal');
+            if (modal) {
+                const bsModal = bootstrap.Modal.getInstance(modal);
+                if (bsModal) {
+                    bsModal.hide();
+                }
+            }
+            
+            // Обновляем отображение АВР в карточке устройства
+            updateDeviceWorkReports(deviceId);
+            
+            // Обновляем стоимость заказов, если мы на странице заказов
+            if (typeof updateAllOrdersCost === 'function') {
+                updateAllOrdersCost();
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при сохранении АВР в БД:', error);
+            showNotification('Ошибка', 'Не удалось сохранить акт выполненных работ: ' + error.message, 'error');
+            // НЕ закрываем модальное окно при ошибке
+        });
         
     } catch (error) {
         console.error('Ошибка при сохранении АВР:', error);

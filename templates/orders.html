@@ -451,7 +451,7 @@
 {% block extra_js %}
 <script>
 // Проверка версии JavaScript
-console.log('Orders page loaded, JavaScript version: v4.5');
+            console.log('Orders page loaded, JavaScript version: v5.0');
 console.log('Current timestamp:', new Date().toISOString());
 </script>
 <script>
@@ -694,8 +694,24 @@ function loadOrderStatusHistory(orderId) {
                 console.error('Ошибка загрузки данных заказа:', error);
             }
             
-            const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
-            const orderReports = deviceId ? (workReports[deviceId] || []) : [];
+            // Загружаем АВР из базы данных через API
+            let orderReports = [];
+            try {
+                const workReportsResponse = await fetch(`/api/work-reports/order/${orderId}`);
+                const workReportsData = await workReportsResponse.json();
+                if (workReportsData.success && workReportsData.work_reports) {
+                    orderReports = workReportsData.work_reports;
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки АВР из БД:', error);
+                // Fallback на localStorage для обратной совместимости
+                try {
+                    const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+                    orderReports = deviceId ? (workReports[deviceId] || []) : [];
+                } catch (e) {
+                    console.error('Ошибка загрузки АВР из localStorage:', e);
+                }
+            }
             
             // Объединяем историю статусов и АВР
             const allEntries = [];
@@ -777,7 +793,7 @@ function loadOrderStatusHistory(orderId) {
                                     <button class="btn btn-outline-primary btn-sm" onclick="viewWorkReportFromOrder('${reportData.id}')" title="Просмотр">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <button class="btn btn-outline-success btn-sm" onclick="printWorkReportFromOrder('${reportData.id}')" title="Печать">
+                                    <button class="btn btn-outline-success btn-sm" onclick="printWorkReportFromOrder(${reportData.id})" title="Печать">
                                         <i class="bi bi-printer"></i>
                                     </button>
                                     <button class="btn btn-outline-danger btn-sm" onclick="deleteWorkReportFromOrder('${reportData.id}', ${orderId})" title="Удалить">
@@ -2676,29 +2692,41 @@ document.addEventListener('DOMContentLoaded', function() {
 async function viewWorkReportFromOrder(reportId) {
     try {
         console.log('Поиск АВР с ID:', reportId);
-        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
-        console.log('Все АВР в localStorage:', workReports);
         
+        // Загружаем АВР из базы данных
         let foundReport = null;
-        let deviceId = null;
-        
-        // Ищем АВР по ID во всех устройствах
-        for (const [devId, reports] of Object.entries(workReports)) {
-            console.log(`Проверяем устройство ${devId}:`, reports);
-            const report = reports.find(r => r.id == reportId); // Используем == вместо === для сравнения строки и числа
-            if (report) {
-                foundReport = report;
-                deviceId = devId;
-                console.log('Найден АВР:', report);
-                break;
+        try {
+            const response = await fetch(`/api/work-reports/${reportId}`);
+            const data = await response.json();
+            if (data.success && data.work_report) {
+                foundReport = data.work_report;
+                console.log('АВР загружен из БД:', foundReport);
+            } else {
+                throw new Error(data.error || 'АВР не найден');
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки АВР из БД:', error);
+            // Fallback на localStorage для обратной совместимости
+            const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+            console.log('Пробуем загрузить из localStorage:', workReports);
+            
+            for (const [devId, reports] of Object.entries(workReports)) {
+                const report = reports.find(r => r.id == reportId);
+                if (report) {
+                    foundReport = report;
+                    console.log('АВР найден в localStorage:', foundReport);
+                    break;
+                }
             }
         }
         
         if (!foundReport) {
-            console.log('АВР не найден. Доступные ID:', Object.values(workReports).flat().map(r => r.id));
+            console.log('АВР не найден ни в БД, ни в localStorage');
             showNotification('Ошибка', 'АВР не найден', 'error');
             return;
         }
+        
+        const deviceId = foundReport.device_id;
         
         // Получаем актуальные данные устройства
         let deviceData = {};
@@ -2812,30 +2840,41 @@ async function viewWorkReportFromOrder(reportId) {
 async function printWorkReportFromOrder(reportId) {
     try {
         console.log('Печать АВР с ID:', reportId);
-        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
-        console.log('Все АВР в localStorage:', workReports);
         
+        // Загружаем АВР из базы данных
         let foundReport = null;
-        let orderId = null;
-        
-        // Ищем АВР по ID во всех устройствах
-        let deviceId = null;
-        for (const [devId, reports] of Object.entries(workReports)) {
-            console.log(`Проверяем устройство ${devId}:`, reports);
-            const report = reports.find(r => r.id == reportId); // Используем == вместо === для сравнения строки и числа
-            if (report) {
-                foundReport = report;
-                deviceId = devId;
-                console.log('Найден АВР для печати:', report);
-                break;
+        try {
+            const response = await fetch(`/api/work-reports/${reportId}`);
+            const data = await response.json();
+            if (data.success && data.work_report) {
+                foundReport = data.work_report;
+                console.log('АВР загружен из БД:', foundReport);
+            } else {
+                throw new Error(data.error || 'АВР не найден');
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки АВР из БД:', error);
+            // Fallback на localStorage для обратной совместимости
+            const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+            console.log('Пробуем загрузить из localStorage:', workReports);
+            
+            for (const [devId, reports] of Object.entries(workReports)) {
+                const report = reports.find(r => r.id == reportId);
+                if (report) {
+                    foundReport = report;
+                    console.log('АВР найден в localStorage:', foundReport);
+                    break;
+                }
             }
         }
         
         if (!foundReport) {
-            console.log('АВР не найден для печати. Доступные ID:', Object.values(workReports).flat().map(r => r.id));
+            console.log('АВР не найден ни в БД, ни в localStorage');
             showNotification('Ошибка', 'АВР не найден', 'error');
             return;
         }
+        
+        const deviceId = foundReport.device_id;
         
         // Получаем актуальные данные устройства
         let deviceData = {};
@@ -2957,32 +2996,44 @@ async function printWorkReportFromOrder(reportId) {
 }
 
 // Удаление АВР из заказа
-function deleteWorkReportFromOrder(reportId, orderId) {
+async function deleteWorkReportFromOrder(reportId, orderId) {
     if (!confirm('Вы уверены, что хотите удалить этот АВР?')) {
         return;
     }
     
     try {
-        const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
-        // Ищем АВР во всех устройствах
-        for (const [deviceId, reports] of Object.entries(workReports)) {
-            const reportIndex = reports.findIndex(r => r.id === reportId);
-            if (reportIndex !== -1) {
-                reports.splice(reportIndex, 1);
-                localStorage.setItem('workReports', JSON.stringify(workReports));
-                loadOrderStatusHistory(orderId); // Обновляем историю
-                
-                // Обновляем стоимость заказа
-                updateOrderCost(orderId);
-                
-                showNotification('Успех', 'АВР удален', 'success');
-                return;
+        // Удаляем из базы данных через API
+        const response = await fetch(`/api/work-reports/${reportId}`, {
+            method: 'DELETE'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('АВР удален из БД');
+            // Также удаляем из localStorage для обратной совместимости
+            try {
+                const workReports = JSON.parse(localStorage.getItem('workReports') || '{}');
+                for (const [deviceId, reports] of Object.entries(workReports)) {
+                    const reportIndex = reports.findIndex(r => r.id == reportId);
+                    if (reportIndex !== -1) {
+                        reports.splice(reportIndex, 1);
+                        localStorage.setItem('workReports', JSON.stringify(workReports));
+                        break;
+                    }
+                }
+            } catch (e) {
+                console.warn('Не удалось удалить из localStorage:', e);
             }
+            
+            loadOrderStatusHistory(orderId); // Обновляем историю
+            updateOrderCost(orderId); // Обновляем стоимость заказа
+            showNotification('Успех', 'АВР удален', 'success');
+        } else {
+            throw new Error(data.error || 'Не удалось удалить АВР');
         }
-        showNotification('Ошибка', 'АВР не найден', 'error');
     } catch (error) {
         console.error('Ошибка при удалении АВР:', error);
-        showNotification('Ошибка', 'Не удалось удалить АВР', 'error');
+        showNotification('Ошибка', 'Не удалось удалить АВР: ' + error.message, 'error');
     }
 }
 
